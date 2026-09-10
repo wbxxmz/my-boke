@@ -7,6 +7,10 @@ const allPosts = (await getCollection('posts')).sort(
 );
 
 // 传给客户端 JS 用于排序和渲染
+const base = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/';
+
 const postsData = allPosts.map((p) => ({
   id: p.id,
   title: p.data.title,
@@ -28,7 +32,7 @@ const postsData = allPosts.map((p) => ({
       <p class="hero-subtitle">记录学习与生活的治愈角落 ✦</p>
       <div class="hero-buttons">
         <button class="hero-btn hero-btn-primary" id="hero-start">开始阅读</button>
-        <a href={`${import.meta.env.BASE_URL}about/`} class="hero-btn hero-btn-secondary">关于我</a>
+        <a href={`${base}about/`} class="hero-btn hero-btn-secondary">关于我</a>
       </div>
     </div>
   </section>
@@ -38,7 +42,7 @@ const postsData = allPosts.map((p) => ({
     <h1 class="page-title" style="margin-top: 1rem;">热门推荐</h1>
     <p class="home-popular-tip">点击量最高的文章,大家都在看 ✦</p>
     <div id="popular-list" class="post-list"></div>
-    <a href={`${import.meta.env.BASE_URL}posts/`} class="view-all-link">查看全部文章 →</a>
+    <a href={`${base}posts/`} class="view-all-link">查看全部文章 →</a>
   </section>
 
   <!-- 同步内联脚本:浏览器绘制前确定 hero 状态,零闪烁 -->
@@ -55,7 +59,7 @@ const postsData = allPosts.map((p) => ({
   </script>
 </BaseLayout>
 
-<script define:vars={{ posts: postsData, BASE: import.meta.env.BASE_URL }}>
+<script define:vars={{ posts: postsData, BASE: base }}>
   (function () {
     var KEY = 'blog_view_counts';
     var list = document.getElementById('popular-list');

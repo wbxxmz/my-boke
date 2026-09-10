@@ -13,7 +13,9 @@ const {
 }: Props = Astro.props;
 
 const pageTitle = `${title} · wbxxmz 的博客`;
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/';
 
 // 收集所有文章,供导航栏的分类下拉和搜索使用
 const allPosts = await getCollection('posts');
@@ -24,7 +26,7 @@ const searchData = allPosts.map((p) => ({
   id: p.id,
   title: p.data.title,
   description: p.data.description,
-  cover: p.data.cover ?? '',
+  cover: p.data.cover ? p.data.cover.replace(/^\//, '') : '',
   date: p.data.pubDate.toISOString().slice(0, 10),
   tags: p.data.tags,
 }));
@@ -132,7 +134,9 @@ const searchData = allPosts.map((p) => ({
 
     <script>
       // ===== 全站 base 路径(GitHub Pages 子路径适配) =====
-      const BASE = import.meta.env.BASE_URL;
+      const BASE = import.meta.env.BASE_URL.endsWith('/')
+        ? import.meta.env.BASE_URL
+        : import.meta.env.BASE_URL + '/';
 
       // ===== 主题切换(深色/浅色) =====
       const themeToggle = document.getElementById('theme-toggle');
@@ -282,7 +286,7 @@ const searchData = allPosts.map((p) => ({
               .map(
                 (p) => `
                 <a href="${BASE}posts/${p.id}/" class="search-item">
-                  ${p.cover ? `<img src="${p.cover}" alt="" />` : ''}
+                  ${p.cover ? `<img src="${BASE}${p.cover}" alt="" />` : ''}
                   <div class="search-item-info">
                     <div class="search-item-title">${p.title}</div>
                     <div class="search-item-desc">${p.description}</div>

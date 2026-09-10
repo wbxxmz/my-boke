@@ -12,6 +12,10 @@ const { tag } = Astro.params;
 const posts = (await getCollection('posts'))
   .filter((p) => p.data.tags.includes(tag!))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const base = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/';
 ---
 
 <BaseLayout title={`分类: ${tag}`} description={`分类 "${tag}" 下的所有文章`}>
@@ -22,13 +26,13 @@ const posts = (await getCollection('posts'))
       posts.map((post) => (
         <li class={`post-item${post.data.cover ? ' has-cover' : ''}`}>
           {post.data.cover && (
-            <a href={`/posts/${post.id}/`} class="post-cover">
-              <img src={post.data.cover} alt={post.data.title} loading="lazy" />
+            <a href={`${base}posts/${post.id}/`} class="post-cover">
+              <img src={`${base}${post.data.cover.replace(/^\//, '')}`} alt={post.data.title} loading="lazy" />
             </a>
           )}
           <div class="post-info">
             <h2>
-              <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+              <a href={`${base}posts/${post.id}/`}>{post.data.title}</a>
             </h2>
             <p class="post-meta">
               <time datetime={post.data.pubDate.toISOString()}>
