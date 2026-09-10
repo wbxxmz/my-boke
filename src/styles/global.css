@@ -493,9 +493,11 @@ a:hover {
   transform:
     translateX(-50%);
   background:
-    #1a1f27;
+    var(--card-bg);
+  backdrop-filter:
+    blur(14px);
   border:
-    1px solid var(--color-border);
+    1px solid var(--card-border);
   border-radius:
     8px;
   padding:
@@ -505,7 +507,7 @@ a:hover {
   z-index:
     100;
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.3);
+    var(--card-shadow);
 }
 
 .nav-dropdown-menu.show {
@@ -528,7 +530,7 @@ a:hover {
 
 .nav-dropdown-menu a:hover {
   background:
-    rgba(255, 255, 255, 0.08);
+    var(--page-btn-hover-bg);
   text-decoration:
     none;
 }
@@ -2113,5 +2115,28 @@ body.page-leaving {
   body.page-leaving {
     transition:
       none;
+  }
+}
+
+/* ---------- 深浅色主题切换渐入渐出 ---------- */
+
+html {
+  transition:
+    opacity 0.28s ease;
+}
+
+html.theme-fading {
+  opacity:
+    0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    transition:
+      none;
+  }
+  html.theme-fading {
+    opacity:
+    1;
   }
 }

@@ -155,11 +155,23 @@ const searchData = allPosts.map((p) => ({
       applyTheme(initialTheme);
 
       if (themeToggle) {
+        let themeSwitching = false;
         themeToggle.addEventListener('click', () => {
+          if (themeSwitching) return;
+          themeSwitching = true;
           const isLight = document.documentElement.hasAttribute('data-theme');
           const next = isLight ? 'dark' : 'light';
           localStorage.setItem('blog_theme', next);
-          applyTheme(next);
+
+          // 淡出 → 切换主题 → 淡入
+          document.documentElement.classList.add('theme-fading');
+          setTimeout(() => {
+            applyTheme(next);
+            document.documentElement.classList.remove('theme-fading');
+            setTimeout(() => {
+              themeSwitching = false;
+            }, 350);
+          }, 280);
         });
       }
 
