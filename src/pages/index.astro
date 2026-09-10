@@ -12,7 +12,7 @@ const postsData = allPosts.map((p) => ({
   title: p.data.title,
   description: p.data.description,
   pubDate: p.data.pubDate.toLocaleDateString('zh-CN'),
-  cover: p.data.cover || '',
+  cover: p.data.cover ? p.data.cover.replace(/^\//, '') : '',
   coverFit: p.data.coverFit || '',
   coverPosition: p.data.coverPosition || '',
   tags: p.data.tags || [],
@@ -28,7 +28,7 @@ const postsData = allPosts.map((p) => ({
       <p class="hero-subtitle">记录学习与生活的治愈角落 ✦</p>
       <div class="hero-buttons">
         <button class="hero-btn hero-btn-primary" id="hero-start">开始阅读</button>
-        <a href="/about/" class="hero-btn hero-btn-secondary">关于我</a>
+        <a href={`${import.meta.env.BASE_URL}about/`} class="hero-btn hero-btn-secondary">关于我</a>
       </div>
     </div>
   </section>
@@ -38,7 +38,7 @@ const postsData = allPosts.map((p) => ({
     <h1 class="page-title" style="margin-top: 1rem;">热门推荐</h1>
     <p class="home-popular-tip">点击量最高的文章,大家都在看 ✦</p>
     <div id="popular-list" class="post-list"></div>
-    <a href="/posts/" class="view-all-link">查看全部文章 →</a>
+    <a href={`${import.meta.env.BASE_URL}posts/`} class="view-all-link">查看全部文章 →</a>
   </section>
 
   <!-- 同步内联脚本:浏览器绘制前确定 hero 状态,零闪烁 -->
@@ -55,7 +55,7 @@ const postsData = allPosts.map((p) => ({
   </script>
 </BaseLayout>
 
-<script define:vars={{ posts: postsData }}>
+<script define:vars={{ posts: postsData, BASE: import.meta.env.BASE_URL }}>
   (function () {
     var KEY = 'blog_view_counts';
     var list = document.getElementById('popular-list');
@@ -86,15 +86,15 @@ const postsData = allPosts.map((p) => ({
         var styleStr = '';
         if (p.coverFit) styleStr += 'object-fit:' + p.coverFit + ';';
         if (p.coverPosition) styleStr += 'object-position:' + p.coverPosition + ';';
-        coverHtml = '<a href="/posts/' + p.id + '/" class="post-cover">' +
-          '<img src="' + p.cover + '" alt="' + p.title + '" loading="lazy" style="' + styleStr + '" />' +
+        coverHtml = '<a href="' + BASE + 'posts/' + p.id + '/" class="post-cover">' +
+          '<img src="' + BASE + p.cover + '" alt="' + p.title + '" loading="lazy" style="' + styleStr + '" />' +
         '</a>';
       }
       return '<li class="post-item popular-item' + (p.cover ? ' has-cover' : '') + '">' +
         '<span class="popular-rank rank-' + rank + '">' + rank + '</span>' +
         coverHtml +
         '<div class="post-info">' +
-          '<h2><a href="/posts/' + p.id + '/">' + p.title + '</a></h2>' +
+          '<h2><a href="' + BASE + 'posts/' + p.id + '/">' + p.title + '</a></h2>' +
           '<p class="post-meta">' +
             '<time>' + p.pubDate + '</time>' +
             (views > 0 ? '<span class="popular-views">👁 ' + views + ' 次阅读</span>' : '') +

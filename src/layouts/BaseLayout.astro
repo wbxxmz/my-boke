@@ -13,6 +13,7 @@ const {
 }: Props = Astro.props;
 
 const pageTitle = `${title} · wbxxmz 的博客`;
+const base = import.meta.env.BASE_URL;
 
 // 收集所有文章,供导航栏的分类下拉和搜索使用
 const allPosts = await getCollection('posts');
@@ -55,19 +56,19 @@ const searchData = allPosts.map((p) => ({
   <body>
     <header class="site-header">
       <nav class="nav">
-        <a href="/" class="logo">wbxxmz 的博客</a>
+        <a href={base} class="logo">wbxxmz 的博客</a>
         <div class="nav-links">
-          <a href="/">首页</a>
-          <a href="/posts/">文章</a>
+          <a href={base}>首页</a>
+          <a href={`${base}posts/`}>文章</a>
           <div class="nav-dropdown">
             <button class="nav-dropdown-btn">分类 ▾</button>
             <div class="nav-dropdown-menu">
               {allTags.map((tag) => (
-                <a href={`/tags/${tag}/`}>{tag}</a>
+                <a href={`${base}tags/${tag}/`}>{tag}</a>
               ))}
             </div>
           </div>
-          <a href="/about/">关于</a>
+          <a href={`${base}about/`}>关于</a>
         </div>
         <div class="nav-search">
           <input
@@ -103,7 +104,7 @@ const searchData = allPosts.map((p) => ({
           <a href="mailto:your-email@example.com" title="邮箱" class="social-link">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
           </a>
-          <a href="/rss.xml" title="RSS 订阅" class="social-link">
+          <a href={`${base}rss.xml`} title="RSS 订阅" class="social-link">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
           </a>
         </div>
@@ -130,6 +131,9 @@ const searchData = allPosts.map((p) => ({
     </div>
 
     <script>
+      // ===== 全站 base 路径(GitHub Pages 子路径适配) =====
+      const BASE = import.meta.env.BASE_URL;
+
       // ===== 主题切换(深色/浅色) =====
       const themeToggle = document.getElementById('theme-toggle');
       const applyTheme = (theme) => {
@@ -216,7 +220,7 @@ const searchData = allPosts.map((p) => ({
               return '<span class="search-match-tag">匹配 · ' + f + '</span>';
             }).join('');
             return (
-              '<a href="/posts/' + p.id + '/" class="search-overlay-item">' +
+              '<a href="' + BASE + 'posts/' + p.id + '/" class="search-overlay-item">' +
                 '<div class="search-overlay-item-info">' +
                   '<div class="search-overlay-item-title">' + highlight(p.title, q) + '</div>' +
                   '<div class="search-overlay-item-desc">' + highlight(p.description, q) + '</div>' +
@@ -277,7 +281,7 @@ const searchData = allPosts.map((p) => ({
             resultsBox.innerHTML = matches
               .map(
                 (p) => `
-                <a href="/posts/${p.id}/" class="search-item">
+                <a href="${BASE}posts/${p.id}/" class="search-item">
                   ${p.cover ? `<img src="${p.cover}" alt="" />` : ''}
                   <div class="search-item-info">
                     <div class="search-item-title">${p.title}</div>

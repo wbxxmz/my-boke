@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const PAGE_SIZE = 4;
+const base = import.meta.env.BASE_URL;
 
 const allPosts = (await getCollection('posts')).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -23,9 +24,9 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
             data-page={Math.floor(idx / PAGE_SIZE) + 1}
           >
             {post.data.cover && (
-              <a href={`/posts/${post.id}/`} class="post-cover">
+              <a href={`${base}posts/${post.id}/`} class="post-cover">
                 <img
-                  src={post.data.cover}
+                  src={`${base}${post.data.cover.replace(/^\//, '')}`}
                   alt={post.data.title}
                   loading="lazy"
                   style={`${post.data.coverFit ? `object-fit:${post.data.coverFit};` : ''}${post.data.coverPosition ? `object-position:${post.data.coverPosition};` : ''}`}
@@ -34,7 +35,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
             )}
             <div class="post-info">
               <h2>
-                <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+                <a href={`${base}posts/${post.id}/`}>{post.data.title}</a>
               </h2>
               <p class="post-meta">
                 <time datetime={post.data.pubDate.toISOString()}>
