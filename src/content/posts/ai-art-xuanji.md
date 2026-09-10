@@ -5,7 +5,7 @@ description: 用 AI 生成一张古风插画是一种怎样的体验？从 promp
 tags:
   - AI 绘画
   - 随笔
-cover: /covers/xuanji-girl.png
+cover: /covers/xuanji-girl.jpg
 coverPosition: top center
 ---
 

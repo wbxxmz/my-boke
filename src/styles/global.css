@@ -2,7 +2,7 @@
 
 :root {
   /* 图片 */
-  --bg-image: url('./picture/marge.png');
+  --bg-image: url('./picture/marge.jpg');
   --bg-overlay: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55));
   --hero-overlay: linear-gradient(
     rgba(10, 20, 50, 0.55),
@@ -80,7 +80,7 @@
 /* ========== 浅色模式 ========== */
 
 :root[data-theme="light"] {
-  --bg-image: url('./picture/riguang.png');
+  --bg-image: url('./picture/riguang.jpg');
   --bg-overlay: linear-gradient(rgba(234, 242, 251, 0.4), rgba(234, 242, 251, 0.2));
   --hero-overlay: linear-gradient(
     rgba(234, 242, 251, 0.6),
