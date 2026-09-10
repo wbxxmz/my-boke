@@ -1,0 +1,29 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title="首页">
+  <h1>最新文章</h1>
+  <ul class="post-list">
+    {
+      posts.map((post) => (
+        <li class="post-item">
+          <h2>
+            <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+          </h2>
+          <p class="post-meta">
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('zh-CN')}
+            </time>
+          </p>
+          <p class="post-excerpt">{post.data.description}</p>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>
