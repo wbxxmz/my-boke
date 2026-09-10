@@ -3,11 +3,67 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="关于">
-  <h1>关于我</h1>
-  <p>你好呀，欢迎来到我的博客 👋</p>
-  <p>
-    这里记录我的学习笔记、技术随笔和生活感想。博客使用
-    <a href="https://astro.build/">Astro</a>
-    构建，文章以 Markdown 格式写在 <code>src/content/posts/</code> 目录里。
-  </p>
+  <div class="about-page">
+    <div class="about-hero">
+      <div class="about-avatar">
+        <span class="avatar-emoji">🌙</span>
+      </div>
+      <h1 class="about-name">wbxxmz</h1>
+      <p class="about-tagline">写点代码,记录生活,慢慢探索这个世界 ✦</p>
+    </div>
+
+    <section class="about-section">
+      <h2>👋 你好呀</h2>
+      <p>
+        欢迎来到我的小角落。这里没有什么宏大的叙事,就是一个普通人记录
+        学习笔记、技术随笔和生活感想的地方。
+      </p>
+      <p>
+        写博客的初衷很简单 — 把东西写清楚的过程就是最好的学习。
+        顺便留下点痕迹,以后回来翻的时候,至少知道自己曾经在想什么。
+      </p>
+    </section>
+
+    <section class="about-section">
+      <h2>🛠 技术栈</h2>
+      <div class="tag-group">
+        <span class="tag">Astro</span>
+        <span class="tag">JavaScript / TypeScript</span>
+        <span class="tag">HTML / CSS</span>
+        <span class="tag">Node.js</span>
+        <span class="tag">Python</span>
+        <span class="tag">Markdown</span>
+        <span class="tag">GitHub</span>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <h2>🔗 联系我</h2>
+      <p>
+        如果想交流、合作或者单纯想打个招呼,可以通过下面的方式找到我:
+      </p>
+      <ul class="contact-list">
+        <li>
+          <strong>GitHub:</strong>
+          <a href="https://github.com/wbxxmz" target="_blank" rel="noopener">
+            github.com/wbxxmz
+          </a>
+        </li>
+        <li>
+          <strong>邮箱:</strong>
+          <a href="mailto:your-email@example.com">your-email@example.com</a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="about-section">
+      <h2>🌟 关于这个博客</h2>
+      <ul class="simple-list">
+        <li>使用 <a href="https://astro.build/">Astro</a> 构建,静态生成,加载飞快</li>
+        <li>文章用 Markdown 写,放在 <code>src/content/posts/</code> 目录下</li>
+        <li>部署在 GitHub Pages,全程免费</li>
+        <li>深色星空主题,背景图是一张 AI 生成的风车插画</li>
+      </ul>
+    </section>
+  </div>
 </BaseLayout>

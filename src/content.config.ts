@@ -11,6 +11,9 @@ const posts = defineCollection({
     pubDate: z.coerce.date(),
     description: z.string(),
     tags: z.array(z.string()).default([]),
+    cover: z.string().optional(),
+    coverFit: z.string().optional(),
+    coverPosition: z.string().optional(),
   }),
 });
 
