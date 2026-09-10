@@ -16,7 +16,7 @@ const { Content } = await render(post);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="article">
+  <article class="article" data-post-id={post.id}>
     <h1>{post.data.title}</h1>
     <time datetime={post.data.pubDate.toISOString()}>
       发布于 {post.data.pubDate.toLocaleDateString('zh-CN')}
@@ -24,3 +24,13 @@ const { Content } = await render(post);
     <Content />
   </article>
 </BaseLayout>
+
+<script is:inline define:vars={{ pid: post.id }}>
+  (function () {
+    var KEY = 'blog_view_counts';
+    var counts = {};
+    try { counts = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+    counts[pid] = (counts[pid] || 0) + 1;
+    try { localStorage.setItem(KEY, JSON.stringify(counts)); } catch (e) {}
+  })();
+</script>

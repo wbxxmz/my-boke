@@ -12,7 +12,7 @@ const {
   description = '一个用 Astro 搭建的个人博客',
 }: Props = Astro.props;
 
-const pageTitle = `${title} · 我的博客`;
+const pageTitle = `${title} · wbxxmz 的博客`;
 
 // 收集所有文章,供导航栏的分类下拉和搜索使用
 const allPosts = await getCollection('posts');
@@ -55,9 +55,10 @@ const searchData = allPosts.map((p) => ({
   <body>
     <header class="site-header">
       <nav class="nav">
-        <a href="/" class="logo">我的博客</a>
+        <a href="/" class="logo">wbxxmz 的博客</a>
         <div class="nav-links">
           <a href="/">首页</a>
+          <a href="/posts/">文章</a>
           <div class="nav-dropdown">
             <button class="nav-dropdown-btn">分类 ▾</button>
             <div class="nav-dropdown-menu">
@@ -319,6 +320,59 @@ const searchData = allPosts.map((p) => ({
           dropdownMenu.classList.remove('show');
         });
       }
+
+      // ===== 全站页面跳转淡入淡出 =====
+      (function () {
+        var LEAVE_MS = 260;
+        var leaving = false;
+
+        document.addEventListener('click', function (e) {
+          // 已被分页等自定义逻辑拦截的点击,不重复处理
+          if (e.defaultPrevented) return;
+          // 只响应鼠标左键,且没有按修饰键
+          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+          var link = e.target.closest('a');
+          if (!link) return;
+          if (link.target === '_blank' || link.hasAttribute('download')) return;
+          if (link.dataset.noTransition !== undefined) return;
+
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) === '#') return;
+
+          var url;
+          try {
+            url = new URL(link.href, location.href);
+          } catch (err) {
+            return;
+          }
+          // 只处理同源 http(s) 链接(排除 mailto、外链等)
+          if (url.origin !== location.origin) return;
+          if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+          // 仅 hash 变化的链接交给浏览器原生处理
+          if (
+            url.pathname === location.pathname &&
+            url.search === location.search &&
+            url.hash
+          ) {
+            return;
+          }
+
+          e.preventDefault();
+          if (leaving) return;
+          leaving = true;
+          document.body.classList.add('page-leaving');
+          setTimeout(function () {
+            location.href = link.href;
+          }, LEAVE_MS);
+        });
+
+        // 浏览器前进/后退命中缓存时,确保淡出类已移除
+        window.addEventListener('pageshow', function () {
+          document.body.classList.remove('page-leaving');
+          leaving = false;
+        });
+      })();
     </script>
   </body>
 </html>

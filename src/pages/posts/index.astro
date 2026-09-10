@@ -1,0 +1,143 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const PAGE_SIZE = 4;
+
+const allPosts = (await getCollection('posts')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
+const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+---
+
+<BaseLayout title="全部文章">
+  <section id="posts-content" class="blog-content visible">
+    <h1 class="page-title" style="margin-top: 1rem;">全部文章</h1>
+    <ul class="post-list">
+      {
+        allPosts.map((post, idx) => (
+          <li
+            class={`post-item${post.data.cover ? ' has-cover' : ''}`}
+            data-page={Math.floor(idx / PAGE_SIZE) + 1}
+          >
+            {post.data.cover && (
+              <a href={`/posts/${post.id}/`} class="post-cover">
+                <img
+                  src={post.data.cover}
+                  alt={post.data.title}
+                  loading="lazy"
+                  style={`${post.data.coverFit ? `object-fit:${post.data.coverFit};` : ''}${post.data.coverPosition ? `object-position:${post.data.coverPosition};` : ''}`}
+                />
+              </a>
+            )}
+            <div class="post-info">
+              <h2>
+                <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+              </h2>
+              <p class="post-meta">
+                <time datetime={post.data.pubDate.toISOString()}>
+                  {post.data.pubDate.toLocaleDateString('zh-CN')}
+                </time>
+              </p>
+              <p class="post-excerpt">{post.data.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- 分页导航 -->
+    {totalPages > 1 && (
+      <nav class="pagination" aria-label="文章分页">
+        <a class="page-btn disabled" data-page-prev>← 上一页</a>
+        {
+          pageNumbers.map((n) => (
+            <a class="page-btn" data-page-num={n}>{n}</a>
+          ))
+        }
+        <a class="page-btn" data-page-next>下一页 →</a>
+      </nav>
+    )}
+  </section>
+</BaseLayout>
+
+<script>
+  // ===== 文章列表分页(SPA 风格,淡入淡出切页) =====
+  var box = document.getElementById('posts-content');
+  var items = document.querySelectorAll('.post-item');
+  var prevBtn = document.querySelector('[data-page-prev]');
+  var nextBtn = document.querySelector('[data-page-next]');
+  var numBtns = document.querySelectorAll('[data-page-num]');
+
+  var totalPages = Array.from(numBtns).reduce(
+    function (max, el) { return Math.max(max, Number(el.dataset.pageNum) || 1); },
+    1,
+  );
+
+  function getPage() {
+    var p = Number(new URLSearchParams(location.search).get('page') || 1);
+    return Math.max(1, Math.min(totalPages, p));
+  }
+
+  var currentPage = getPage();
+
+  function applyPage(p) {
+    items.forEach(function (el) {
+      el.style.display = Number(el.dataset.page) === p ? '' : 'none';
+    });
+    numBtns.forEach(function (el) {
+      el.classList.toggle('active', Number(el.dataset.pageNum) === p);
+    });
+    if (prevBtn) prevBtn.classList.toggle('disabled', p <= 1);
+    if (nextBtn) nextBtn.classList.toggle('disabled', p >= totalPages);
+  }
+
+  function goToPage(n) {
+    if (n === currentPage) return;
+    if (box) box.classList.add('page-fade-out');
+    setTimeout(function () {
+      currentPage = n;
+      applyPage(n);
+      var url = new URL(location.href);
+      if (n === 1) url.searchParams.delete('page');
+      else url.searchParams.set('page', String(n));
+      history.pushState(null, '', url.toString());
+      if (box) {
+        box.classList.remove('page-fade-out');
+        box.classList.add('page-fade-in');
+        setTimeout(function () {
+          box.classList.remove('page-fade-in');
+        }, 400);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 250);
+  }
+
+  applyPage(currentPage);
+
+  window.addEventListener('popstate', function () {
+    currentPage = getPage();
+    applyPage(currentPage);
+  });
+
+  numBtns.forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      goToPage(Number(el.dataset.pageNum));
+    });
+  });
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      goToPage(currentPage - 1);
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      goToPage(currentPage + 1);
+    });
+  }
+</script>

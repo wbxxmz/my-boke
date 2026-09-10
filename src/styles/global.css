@@ -1675,3 +1675,443 @@ html:not([data-theme="light"]) .theme-icon-light {
   border-top:
     1px solid var(--card-border);
 }
+
+/* ---------- 首页热门推荐 ---------- */
+
+.home-popular-wrap {
+  max-width:
+    720px;
+  margin:
+    0 auto;
+}
+
+.home-popular-tip {
+  color:
+    var(--color-muted);
+  font-size:
+    0.9rem;
+  margin:
+    -0.25rem 0 1rem;
+  text-align:
+    center;
+}
+
+.popular-item {
+  position:
+    relative;
+  padding-left:
+    3rem;
+}
+
+.popular-rank {
+  position:
+    absolute;
+  top:
+    1.25rem;
+  left:
+    0.5rem;
+  width:
+    2rem;
+  height:
+    2rem;
+  border-radius:
+    50%;
+  display:
+    flex;
+  align-items:
+    center;
+  justify-content:
+    center;
+  font-size:
+    0.9rem;
+  font-weight:
+    700;
+  color:
+    var(--color-muted);
+  background:
+    var(--page-btn-bg);
+  border:
+    1px solid var(--card-border);
+}
+
+.popular-rank.rank-1 {
+  background:
+    linear-gradient(135deg, #ffd700, #ffa500);
+  color:
+    #1a1a1a;
+  border-color:
+    transparent;
+  box-shadow:
+    0 0 12px rgba(255, 200, 0, 0.4);
+}
+.popular-rank.rank-2 {
+  background:
+    linear-gradient(135deg, #c0c0c0, #a8a8a8);
+  color:
+    #1a1a1a;
+  border-color:
+    transparent;
+  box-shadow:
+    0 0 10px rgba(192, 192, 192, 0.35);
+}
+.popular-rank.rank-3 {
+  background:
+    linear-gradient(135deg, #cd7f32, #b87333);
+  color:
+    #ffffff;
+  border-color:
+    transparent;
+  box-shadow:
+    0 0 10px rgba(205, 127, 50, 0.35);
+}
+
+.popular-views {
+  margin-left:
+    0.75rem;
+  font-size:
+    0.8rem;
+  color:
+    var(--color-accent);
+}
+
+.view-all-link {
+  display:
+    block;
+  text-align:
+    center;
+  margin:
+    1.5rem 0 1rem;
+  padding:
+    0.75rem 1.5rem;
+  border-radius:
+    10px;
+  text-decoration:
+    none;
+  font-size:
+    0.95rem;
+  font-weight:
+    600;
+  color:
+    var(--page-btn-text);
+  background:
+    var(--page-btn-bg);
+  border:
+    1px solid var(--page-btn-border);
+  transition:
+    background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.view-all-link:hover {
+  background:
+    var(--page-btn-hover-bg);
+  transform:
+    translateY(-2px);
+  box-shadow:
+    var(--page-btn-hover-shadow);
+  text-decoration:
+    none;
+}
+
+.calendar-card {
+  background:
+    var(--card-bg);
+  border:
+    1px solid var(--card-border);
+  border-radius:
+    16px;
+  padding:
+    1.5rem;
+  backdrop-filter:
+    blur(12px);
+  box-shadow:
+    var(--card-shadow);
+}
+
+.calendar-header {
+  display:
+    flex;
+  align-items:
+    center;
+  justify-content:
+    space-between;
+  margin-bottom:
+    1.25rem;
+}
+
+.calendar-title {
+  margin:
+    0;
+  font-size:
+    1.2rem;
+  font-weight:
+    700;
+  color:
+    var(--color-text);
+}
+
+.calendar-nav-btn {
+  width:
+    2.25rem;
+  height:
+    2.25rem;
+  border-radius:
+    50%;
+  border:
+    1px solid var(--page-btn-border);
+  background:
+    var(--page-btn-bg);
+  color:
+    var(--page-btn-text);
+  cursor:
+    pointer;
+  font-size:
+    1rem;
+  transition:
+    background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.calendar-nav-btn:hover {
+  background:
+    var(--page-btn-hover-bg);
+  transform:
+    scale(1.08);
+  box-shadow:
+    var(--page-btn-hover-shadow);
+}
+
+.calendar-weekdays {
+  display:
+    grid;
+  grid-template-columns:
+    repeat(7, 1fr);
+  gap:
+    4px;
+  margin-bottom:
+    0.5rem;
+}
+.calendar-weekdays span {
+  text-align:
+    center;
+  font-size:
+    0.8rem;
+  color:
+    var(--color-muted);
+  padding:
+    0.25rem 0;
+}
+
+.calendar-grid {
+  display:
+    grid;
+  grid-template-columns:
+    repeat(7, 1fr);
+  gap:
+    4px;
+}
+
+.cal-cell {
+  position:
+    relative;
+  aspect-ratio:
+    1;
+  display:
+    flex;
+  align-items:
+    center;
+  justify-content:
+    center;
+  border-radius:
+    10px;
+  font-size:
+    0.9rem;
+  color:
+    var(--color-text);
+  text-decoration:
+    none;
+  transition:
+    background 0.2s, transform 0.2s;
+}
+
+a.cal-cell {
+  cursor:
+    pointer;
+}
+a.cal-cell:hover {
+  transform:
+    scale(1.08);
+  text-decoration:
+    none;
+}
+
+.cal-cell.other {
+  color:
+    var(--color-muted);
+  opacity:
+    0.35;
+}
+
+.cal-cell.today {
+  border:
+    1px solid var(--color-accent);
+  font-weight:
+    700;
+}
+
+.cal-cell.has-post {
+  background:
+    var(--btn-primary-bg);
+  color:
+    #ffffff;
+  font-weight:
+    600;
+  box-shadow:
+    var(--btn-primary-shadow);
+}
+.cal-cell.has-post:hover {
+  box-shadow:
+    var(--btn-primary-shadow);
+}
+
+.cal-dot {
+  position:
+    absolute;
+  bottom:
+    5px;
+  left:
+    50%;
+  width:
+    5px;
+  height:
+    5px;
+  border-radius:
+    50%;
+  background:
+    #ffffff;
+  transform:
+    translateX(-50%);
+  opacity:
+    0.9;
+}
+.cal-dot.multi {
+  box-shadow:
+    -7px 0 0 #ffffff, 7px 0 0 #ffffff;
+}
+
+.calendar-month-posts {
+  margin-top:
+    1.25rem;
+  padding-top:
+    1rem;
+  border-top:
+    1px solid var(--card-border);
+  display:
+    flex;
+  flex-direction:
+    column;
+  gap:
+    0.5rem;
+}
+
+.cal-month-title {
+  font-size:
+    0.85rem;
+  color:
+    var(--color-muted);
+  margin-bottom:
+    0.25rem;
+}
+
+.cal-post-link {
+  display:
+    flex;
+  align-items:
+    center;
+  gap:
+    0.75rem;
+  padding:
+    0.5rem 0.75rem;
+  border-radius:
+    8px;
+  text-decoration:
+    none;
+  color:
+    var(--color-text);
+  transition:
+    background 0.2s, transform 0.2s;
+}
+.cal-post-link:hover {
+  background:
+    var(--page-btn-hover-bg);
+  text-decoration:
+    none;
+  transform:
+    translateX(3px);
+}
+
+.cal-post-date {
+  flex-shrink:
+    0;
+  font-size:
+    0.8rem;
+  color:
+    var(--color-accent);
+  font-weight:
+    600;
+  min-width:
+    2.5rem;
+}
+
+.cal-post-name {
+  font-size:
+    0.9rem;
+}
+
+.cal-month-empty {
+  font-size:
+    0.85rem;
+  color:
+    var(--color-muted);
+  text-align:
+    center;
+  padding:
+    0.75rem 0;
+}
+
+/* ---------- 全站页面跳转淡入淡出 ---------- */
+
+/* 新页面加载时淡入 */
+body {
+  animation:
+    pageEnter 0.45s ease both;
+}
+
+/* 跳转前旧页面淡出 */
+body.page-leaving {
+  animation:
+    none;
+  opacity:
+    0;
+  transition:
+    opacity 0.26s ease;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity:
+      0;
+  }
+  to {
+    opacity:
+      1;
+  }
+}
+
+/* 用户开启"减少动态效果"时,尊重系统设置 */
+@media (prefers-reduced-motion: reduce) {
+  body {
+    animation:
+      none;
+  }
+  body.page-leaving {
+    transition:
+      none;
+  }
+}

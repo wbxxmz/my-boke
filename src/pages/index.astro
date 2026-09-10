@@ -2,14 +2,21 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const PAGE_SIZE = 4;
-
 const allPosts = (await getCollection('posts')).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
-const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
-const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+// 传给客户端 JS 用于排序和渲染
+const postsData = allPosts.map((p) => ({
+  id: p.id,
+  title: p.data.title,
+  description: p.data.description,
+  pubDate: p.data.pubDate.toLocaleDateString('zh-CN'),
+  cover: p.data.cover || '',
+  coverFit: p.data.coverFit || '',
+  coverPosition: p.data.coverPosition || '',
+  tags: p.data.tags || [],
+}));
 ---
 
 <BaseLayout title="首页">
@@ -17,7 +24,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   <section id="hero-overlay" class="hero-overlay">
     <div class="hero-content">
       <div class="hero-icon">✦</div>
-      <h1 class="hero-title">欢迎来到我的博客</h1>
+      <h1 class="hero-title">欢迎来到 wbxxmz 的博客</h1>
       <p class="hero-subtitle">记录学习与生活的治愈角落 ✦</p>
       <div class="hero-buttons">
         <button class="hero-btn hero-btn-primary" id="hero-start">开始阅读</button>
@@ -26,64 +33,21 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
     </div>
   </section>
 
-  <!-- 博客内容 -->
-  <section id="blog-content" class="blog-content">
-    <h1 class="page-title" style="margin-top: 1rem;">最新文章</h1>
-    <ul class="post-list">
-      {
-        allPosts.map((post, idx) => (
-          <li
-            class={`post-item${post.data.cover ? ' has-cover' : ''}`}
-            data-page={Math.floor(idx / PAGE_SIZE) + 1}
-          >
-            {post.data.cover && (
-              <a href={`/posts/${post.id}/`} class="post-cover">
-                <img
-                  src={post.data.cover}
-                  alt={post.data.title}
-                  loading="lazy"
-                  style={`${post.data.coverFit ? `object-fit:${post.data.coverFit};` : ''}${post.data.coverPosition ? `object-position:${post.data.coverPosition};` : ''}`}
-                />
-              </a>
-            )}
-            <div class="post-info">
-              <h2>
-                <a href={`/posts/${post.id}/`}>{post.data.title}</a>
-              </h2>
-              <p class="post-meta">
-                <time datetime={post.data.pubDate.toISOString()}>
-                  {post.data.pubDate.toLocaleDateString('zh-CN')}
-                </time>
-              </p>
-              <p class="post-excerpt">{post.data.description}</p>
-            </div>
-          </li>
-        ))
-      }
-    </ul>
-
-    <!-- 分页导航 -->
-    {totalPages > 1 && (
-      <nav class="pagination" aria-label="文章分页">
-        <a class="page-btn disabled" data-page-prev>← 上一页</a>
-        {
-          pageNumbers.map((n) => (
-            <a class="page-btn" data-page-num={n}>{n}</a>
-          ))
-        }
-        <a class="page-btn" data-page-next>下一页 →</a>
-      </nav>
-    )}
+  <!-- 首页内容:热门文章推荐 -->
+  <section id="blog-content" class="blog-content home-popular-wrap">
+    <h1 class="page-title" style="margin-top: 1rem;">热门推荐</h1>
+    <p class="home-popular-tip">点击量最高的文章,大家都在看 ✦</p>
+    <div id="popular-list" class="post-list"></div>
+    <a href="/posts/" class="view-all-link">查看全部文章 →</a>
   </section>
 
-  <!-- 同步内联脚本(is:inline):所有 DOM 都创建好之后、浏览器绘制之前执行,零闪烁 -->
+  <!-- 同步内联脚本:浏览器绘制前确定 hero 状态,零闪烁 -->
   <script is:inline>
     (function () {
-      var isPaged = new URLSearchParams(location.search).has('page');
       var dismissed = sessionStorage.getItem('blog_hero_dismissed');
       var hero = document.getElementById('hero-overlay');
       var blog = document.getElementById('blog-content');
-      if (isPaged || dismissed) {
+      if (dismissed) {
         if (hero) hero.classList.add('hidden');
         if (blog) blog.classList.add('visible');
       }
@@ -91,99 +55,73 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   </script>
 </BaseLayout>
 
+<script define:vars={{ posts: postsData }}>
+  (function () {
+    var KEY = 'blog_view_counts';
+    var list = document.getElementById('popular-list');
+    if (!list) return;
+
+    // 读取点击量
+    var counts = {};
+    try {
+      counts = JSON.parse(localStorage.getItem(KEY) || '{}');
+    } catch (e) {}
+
+    // 按点击量排序,没点击量的按时间倒序排在后面
+    var sorted = posts.slice().sort(function (a, b) {
+      var ca = counts[a.id] || 0;
+      var cb = counts[b.id] || 0;
+      if (cb !== ca) return cb - ca;
+      return 0; // 保持原数组顺序(已按时间倒序)
+    });
+
+    // 展示前 5 篇
+    var top = sorted.slice(0, 5);
+
+    list.innerHTML = top.map(function (p, i) {
+      var views = counts[p.id] || 0;
+      var rank = i + 1;
+      var coverHtml = '';
+      if (p.cover) {
+        var styleStr = '';
+        if (p.coverFit) styleStr += 'object-fit:' + p.coverFit + ';';
+        if (p.coverPosition) styleStr += 'object-position:' + p.coverPosition + ';';
+        coverHtml = '<a href="/posts/' + p.id + '/" class="post-cover">' +
+          '<img src="' + p.cover + '" alt="' + p.title + '" loading="lazy" style="' + styleStr + '" />' +
+        '</a>';
+      }
+      return '<li class="post-item popular-item' + (p.cover ? ' has-cover' : '') + '">' +
+        '<span class="popular-rank rank-' + rank + '">' + rank + '</span>' +
+        coverHtml +
+        '<div class="post-info">' +
+          '<h2><a href="/posts/' + p.id + '/">' + p.title + '</a></h2>' +
+          '<p class="post-meta">' +
+            '<time>' + p.pubDate + '</time>' +
+            (views > 0 ? '<span class="popular-views">👁 ' + views + ' 次阅读</span>' : '') +
+          '</p>' +
+          '<p class="post-excerpt">' + p.description + '</p>' +
+        '</div>' +
+      '</li>';
+    }).join('');
+  })();
+</script>
+
 <script>
-  // ===== 交互逻辑(module script,异步执行,只处理事件绑定 =====
+  // ===== 欢迎页交互 =====
   var KEY = 'blog_hero_dismissed';
 
   var overlay = document.getElementById('hero-overlay');
   var btn = document.getElementById('hero-start');
   var blog = document.getElementById('blog-content');
-  var items = document.querySelectorAll('.post-item');
-  var prevBtn = document.querySelector('[data-page-prev]');
-  var nextBtn = document.querySelector('[data-page-next]');
-  var numBtns = document.querySelectorAll('[data-page-num]');
 
-  var totalPages = Array.from(numBtns).reduce(
-    function (max, el) { return Math.max(max, Number(el.dataset.pageNum) || 1); },
-    1,
-  );
-
-  function getPage() {
-    var p = Number(new URLSearchParams(location.search).get('page') || 1);
-    return Math.max(1, Math.min(totalPages, p));
-  }
-
-  // SPA 风格切页:淡出 → 切内容 → 淡入,不整页刷新
-  function goToPage(n) {
-    if (n === currentPage) return;
-    if (blog) blog.classList.add('page-fade-out');
-    setTimeout(function () {
-      currentPage = n;
-      applyPage(n);
-      // 同步更新浏览器地址栏(不刷新)
-      var url = new URL(location.href);
-      if (n === 1) url.searchParams.delete('page');
-      else url.searchParams.set('page', String(n));
-      history.pushState(null, '', url.toString());
-      if (blog) {
-        blog.classList.remove('page-fade-out');
-        blog.classList.add('page-fade-in');
-        setTimeout(function () {
-          blog.classList.remove('page-fade-in');
-        }, 400);
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 250);
-  }
-
-  function applyPage(p) {
-    items.forEach(function (el) {
-      el.style.display = Number(el.dataset.page) === p ? '' : 'none';
-    });
-    numBtns.forEach(function (el) {
-      el.classList.toggle('active', Number(el.dataset.pageNum) === p);
-    });
-    if (prevBtn) prevBtn.classList.toggle('disabled', p <= 1);
-    if (nextBtn) nextBtn.classList.toggle('disabled', p >= totalPages);
-  }
-
-  var currentPage = getPage();
-
-  // 分页过滤
-  applyPage(currentPage);
-
-  // 监听浏览器前进/后退(翻页时也能正常工作)
-  window.addEventListener('popstate', function () {
-    currentPage = getPage();
-    applyPage(currentPage);
-  });
-
-  // "开始阅读"按钮
   if (overlay && btn && blog) {
     btn.addEventListener('click', function () {
       sessionStorage.setItem(KEY, '1');
       overlay.classList.add('hidden');
       blog.classList.add('visible');
-    });
-  }
-
-  // 分页按钮 — 全改成 goToPage,不再整页跳转
-  numBtns.forEach(function (el) {
-    el.addEventListener('click', function (e) {
-      e.preventDefault();
-      goToPage(Number(el.dataset.pageNum));
-    });
-  });
-  if (prevBtn) {
-    prevBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      goToPage(currentPage - 1);
-    });
-  }
-  if (nextBtn) {
-    nextBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      goToPage(currentPage + 1);
+      setTimeout(function () {
+        blog.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     });
   }
 </script>
