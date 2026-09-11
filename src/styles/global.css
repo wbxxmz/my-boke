@@ -73,6 +73,9 @@
   --about-code-bg: rgba(100, 140, 200, 0.2);
   --about-tag-bg: rgba(100, 140, 200, 0.18);
   --about-section-border: rgba(140, 180, 240, 0.15);
+  --about-card-bg: rgba(18, 26, 56, 0.55);
+  --about-card-border: rgba(140, 180, 240, 0.22);
+  --about-card-shadow: 0 6px 24px rgba(10, 20, 50, 0.4);
 
   --width: 720px;
 }
@@ -142,6 +145,9 @@
   --about-code-bg: rgba(30, 60, 140, 0.12);
   --about-tag-bg: rgba(30, 60, 140, 0.1);
   --about-section-border: rgba(30, 60, 140, 0.18);
+  --about-card-bg: rgba(255, 255, 255, 0.85);
+  --about-card-border: rgba(30, 60, 140, 0.18);
+  --about-card-shadow: 0 6px 24px rgba(30, 60, 140, 0.12);
 }
 
 * {
@@ -1206,7 +1212,19 @@ a:hover {
   text-align:
     center;
   padding:
-    2.5rem 0 1.5rem;
+    2.5rem 1.75rem 2rem;
+  background:
+    var(--about-card-bg);
+  border:
+    1px solid var(--about-card-border);
+  border-radius:
+    14px;
+  box-shadow:
+    var(--about-card-shadow);
+  backdrop-filter:
+    blur(14px);
+  -webkit-backdrop-filter:
+    blur(14px);
 }
 .about-avatar {
   width:
@@ -1250,11 +1268,21 @@ a:hover {
 }
 .about-section {
   margin-top:
-    2rem;
-  padding-top:
-    1.25rem;
-  border-top:
-    1px solid var(--about-section-border);
+    1.5rem;
+  padding:
+    1.5rem 1.75rem;
+  background:
+    var(--about-card-bg);
+  border:
+    1px solid var(--about-card-border);
+  border-radius:
+    14px;
+  box-shadow:
+    var(--about-card-shadow);
+  backdrop-filter:
+    blur(14px);
+  -webkit-backdrop-filter:
+    blur(14px);
 }
 .about-section h2 {
   font-size:
