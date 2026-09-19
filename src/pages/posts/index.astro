@@ -22,7 +22,12 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
       {
         allPosts.map((post, idx) => (
           <li
-            class={`post-item${post.data.cover ? ' has-cover' : ''}`}
+            class={`post-item${post.data.cover ? ' has-cover' : ''}${
+              post.data.updatedDate &&
+              post.data.updatedDate.valueOf() !== post.data.pubDate.valueOf()
+                ? ' has-update'
+                : ''
+            }`}
             data-page={Math.floor(idx / PAGE_SIZE) + 1}
           >
             {post.data.cover && (
@@ -46,6 +51,14 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
               </p>
               <p class="post-excerpt">{post.data.description}</p>
             </div>
+            {post.data.updatedDate &&
+              post.data.updatedDate.valueOf() !==
+                post.data.pubDate.valueOf() && (
+                <span class="post-updated" title="文章最近修改时间">
+                  ✎ 更新于{' '}
+                  {post.data.updatedDate.toLocaleDateString('zh-CN')}
+                </span>
+              )}
           </li>
         ))
       }

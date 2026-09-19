@@ -2489,3 +2489,50 @@ html.theme-fading {
       none;
   }
 }
+
+/* ---------- 文章卡片右下角:更新时间标记 ---------- */
+
+/* 有更新标记的卡片,底部多留一点空间 */
+.post-item.has-update {
+  padding-bottom:
+    3rem;
+}
+
+.post-updated {
+  position:
+    absolute;
+  right:
+    1rem;
+  bottom:
+    0.7rem;
+  padding:
+    0.18rem 0.65rem;
+  font-size:
+    0.75rem;
+  color:
+    var(--color-muted);
+  background:
+    var(--card-bg);
+  border:
+    1px solid var(--card-border);
+  border-radius:
+    999px;
+  backdrop-filter:
+    blur(8px);
+  -webkit-backdrop-filter:
+    blur(8px);
+  pointer-events:
+    none;
+  white-space:
+    nowrap;
+}
+
+/* 窄屏下标记适当缩小 */
+@media (max-width: 600px) {
+  .post-updated {
+    right:
+      0.75rem;
+    font-size:
+      0.7rem;
+  }
+}

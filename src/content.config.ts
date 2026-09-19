@@ -14,6 +14,7 @@ const posts = defineCollection({
     cover: z.string().optional(),
     coverFit: z.string().optional(),
     coverPosition: z.string().optional(),
+    updatedDate: z.coerce.date().optional(),
   }),
 });
 
