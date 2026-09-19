@@ -2171,6 +2171,321 @@ html.theme-fading {
   }
   html.theme-fading {
     opacity:
+      1;
+  }
+}
+
+/* ---------- 文章底部:阅读量 + 点赞 ---------- */
+
+.post-actions {
+  display:
+    flex;
+  align-items:
+    center;
+  justify-content:
+    space-between;
+  gap:
+    1rem;
+  margin:
+    2rem 0 1.5rem;
+  padding:
+    0.9rem 1.1rem;
+  background:
+    var(--card-bg);
+  border:
+    1px solid var(--card-border);
+  border-radius:
+    12px;
+  box-shadow:
+    var(--card-shadow);
+  backdrop-filter:
+    blur(12px);
+  -webkit-backdrop-filter:
+    blur(12px);
+}
+
+.post-stat {
+  color:
+    var(--color-muted);
+  font-size:
+    0.92rem;
+}
+
+.like-btn {
+  display:
+    inline-flex;
+  align-items:
+    center;
+  gap:
+    0.4rem;
+  padding:
+    0.45rem 1rem;
+  font-size:
+    0.92rem;
+  color:
+    var(--color-text);
+  background:
+    var(--btn-secondary-bg);
+  border:
+    1px solid var(--btn-secondary-border);
+  border-radius:
+    999px;
+  cursor:
+    pointer;
+  transition:
+    background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.like-btn:hover {
+  transform:
+    translateY(-2px);
+  box-shadow:
+    var(--card-hover-shadow);
+}
+
+.like-btn:active {
+  transform:
+    scale(0.95);
+}
+
+.like-heart {
+  font-size:
+    1.05rem;
+  line-height:
     1;
+  color:
+    var(--color-muted);
+}
+
+.like-count {
+  min-width:
+    1em;
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* 已赞状态 */
+.like-btn.liked {
+  color:
+    #ffffff;
+  background:
+    linear-gradient(135deg, #ff6b8b, #e63956);
+  border-color:
+    transparent;
+  box-shadow:
+    0 4px 16px rgba(230, 57, 86, 0.4);
+}
+
+.like-btn.liked .like-heart {
+  color:
+    #ffffff;
+}
+
+/* 点赞瞬间的心跳弹出 */
+.like-heart.pop {
+  animation:
+    heartPop 0.45s ease;
+}
+
+@keyframes heartPop {
+  0% {
+    transform:
+      scale(1);
+  }
+  40% {
+    transform:
+      scale(1.6);
+  }
+  70% {
+    transform:
+      scale(0.9);
+  }
+  100% {
+    transform:
+      scale(1);
+  }
+}
+
+/* ---------- 上一篇 / 下一篇 ---------- */
+
+.post-nav {
+  display:
+    grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap:
+    1rem;
+  margin:
+    1.5rem 0 2rem;
+}
+
+.post-nav-card {
+  display:
+    flex;
+  flex-direction:
+    column;
+  gap:
+    0.6rem;
+  padding:
+    1rem 1.1rem;
+  min-height:
+    5.5rem;
+  color:
+    var(--color-text);
+  text-decoration:
+    none;
+  background:
+    var(--card-bg);
+  border:
+    1px solid var(--card-border);
+  border-radius:
+    12px;
+  box-shadow:
+    var(--card-shadow);
+  backdrop-filter:
+    blur(12px);
+  -webkit-backdrop-filter:
+    blur(12px);
+  transition:
+    transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.post-nav-card:hover {
+  transform:
+    translateY(-3px);
+  border-color:
+    var(--color-accent);
+  box-shadow:
+    var(--card-hover-shadow);
+  text-decoration:
+    none;
+}
+
+.post-nav-card.next {
+  text-align:
+    right;
+}
+
+.post-nav-label {
+  font-size:
+    0.8rem;
+  color:
+    var(--color-muted);
+}
+
+.post-nav-body {
+  display:
+    flex;
+  align-items:
+    center;
+  gap:
+    0.7rem;
+}
+
+.post-nav-card.next .post-nav-body {
+  justify-content:
+    flex-end;
+}
+
+.post-nav-text {
+  font-size:
+    0.95rem;
+  font-weight:
+    600;
+  line-height:
+    1.4;
+}
+
+.post-nav-cover {
+  flex-shrink:
+    0;
+  width:
+    56px;
+  height:
+    56px;
+  border-radius:
+    8px;
+  object-fit:
+    cover;
+}
+
+.post-nav-card.is-empty {
+  background:
+    transparent;
+  border:
+    1px dashed var(--color-border);
+  box-shadow:
+    none;
+  backdrop-filter:
+    none;
+  pointer-events:
+    none;
+}
+
+/* ---------- 评论区 ---------- */
+
+.comments-section {
+  margin:
+    2rem 0 1rem;
+}
+
+.comments-title {
+  margin:
+    0 0 1rem;
+  font-size:
+    1.35rem;
+}
+
+.comments-box {
+  min-height:
+    120px;
+  padding:
+    1.1rem 1.2rem;
+  background:
+    var(--card-bg);
+  border:
+    1px solid var(--card-border);
+  border-radius:
+    12px;
+  box-shadow:
+    var(--card-shadow);
+  backdrop-filter:
+    blur(12px);
+  -webkit-backdrop-filter:
+    blur(12px);
+}
+
+.comments-loading {
+  margin:
+    0;
+  color:
+    var(--color-muted);
+  font-size:
+    0.9rem;
+}
+
+/* utterances iframe 自适应宽度 */
+.comments-box .utterances {
+  max-width:
+    100%;
+}
+
+/* 窄屏:上下篇改成单列 */
+@media (max-width: 600px) {
+  .post-nav {
+    grid-template-columns:
+      1fr;
+  }
+  .post-nav-card.next {
+    text-align:
+      left;
+  }
+  .post-nav-card.next .post-nav-body {
+    justify-content:
+      flex-start;
+  }
+  .like-label {
+    display:
+      none;
   }
 }

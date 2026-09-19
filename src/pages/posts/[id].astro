@@ -13,6 +13,24 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+// 全站文章按发布时间倒序,用于计算上一篇/下一篇
+const allPosts = (await getCollection('posts')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const currentIndex = allPosts.findIndex((p) => p.id === post.id);
+const newerPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+const olderPost =
+  currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+
+const base = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/';
+
+// 把 /covers/xx.jpg 转成带 base 前缀的路径
+function withBase(path) {
+  return base + path.replace(/^\//, '');
+}
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
@@ -23,14 +41,165 @@ const { Content } = await render(post);
     </time>
     <Content />
   </article>
+
+  <!-- 阅读量 + 点赞 -->
+  <div class="post-actions">
+    <span class="post-stat">
+      👁 <span id="view-count">0</span> 次阅读
+    </span>
+    <button class="like-btn" id="like-btn" type="button">
+      <span class="like-heart" id="like-heart">♡</span>
+      <span class="like-label" id="like-label">点赞</span>
+      <span class="like-count" id="like-count">0</span>
+    </button>
+  </div>
+
+  <!-- 上一篇 / 下一篇 -->
+  <nav class="post-nav" aria-label="文章导航">
+    {
+      olderPost ? (
+        <a href={withBase(`posts/${olderPost.id}/`)} class="post-nav-card">
+          <span class="post-nav-label">← 上一篇</span>
+          <span class="post-nav-body">
+            {olderPost.data.cover && (
+              <img
+                src={withBase(olderPost.data.cover)}
+                alt=""
+                class="post-nav-cover"
+              />
+            )}
+            <span class="post-nav-text">{olderPost.data.title}</span>
+          </span>
+        </a>
+      ) : (
+        <span class="post-nav-card is-empty" />
+      )
+    }
+    {
+      newerPost ? (
+        <a href={withBase(`posts/${newerPost.id}/`)} class="post-nav-card next">
+          <span class="post-nav-label">下一篇 →</span>
+          <span class="post-nav-body">
+            <span class="post-nav-text">{newerPost.data.title}</span>
+            {newerPost.data.cover && (
+              <img
+                src={withBase(newerPost.data.cover)}
+                alt=""
+                class="post-nav-cover"
+              />
+            )}
+          </span>
+        </a>
+      ) : (
+        <span class="post-nav-card is-empty" />
+      )
+    }
+  </nav>
+
+  <!-- 评论区(utterances) -->
+  <section class="comments-section">
+    <h2 class="comments-title">💬 评论</h2>
+    <div class="comments-box" id="comments-box">
+      <p class="comments-loading">评论区加载中…(需要能访问 utteranc.es)</p>
+    </div>
+  </section>
 </BaseLayout>
 
-<script is:inline define:vars={{ pid: post.id }}>
+<script
+  is:inline
+  define:vars={{ pid: post.id, repo: 'wbxxmz/my-boke' }}
+>
   (function () {
-    var KEY = 'blog_view_counts';
-    var counts = {};
-    try { counts = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
-    counts[pid] = (counts[pid] || 0) + 1;
-    try { localStorage.setItem(KEY, JSON.stringify(counts)); } catch (e) {}
+    var VIEW_KEY = 'blog_view_counts';
+    var LIKE_KEY = 'blog_likes';
+
+    function readJSON(key) {
+      try {
+        return JSON.parse(localStorage.getItem(key) || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+    function writeJSON(key, obj) {
+      try {
+        localStorage.setItem(key, JSON.stringify(obj));
+      } catch (e) {}
+    }
+
+    // 阅读量 +1 并回显
+    var views = readJSON(VIEW_KEY);
+    views[pid] = (views[pid] || 0) + 1;
+    writeJSON(VIEW_KEY, views);
+    var viewEl = document.getElementById('view-count');
+    if (viewEl) viewEl.textContent = views[pid];
+
+    // 点赞(本地记录,每篇文章只能赞一次,可取消)
+    var likes = readJSON(LIKE_KEY);
+    var likeBtn = document.getElementById('like-btn');
+    var likeHeart = document.getElementById('like-heart');
+    var likeLabel = document.getElementById('like-label');
+    var likeCount = document.getElementById('like-count');
+
+    function renderLike() {
+      var liked = !!likes[pid];
+      if (likeBtn) likeBtn.classList.toggle('liked', liked);
+      if (likeHeart) likeHeart.textContent = liked ? '❤' : '♡';
+      if (likeLabel) likeLabel.textContent = liked ? '已赞' : '点赞';
+      if (likeCount) likeCount.textContent = liked ? '1' : '0';
+    }
+    renderLike();
+
+    if (likeBtn) {
+      likeBtn.addEventListener('click', function () {
+        if (likes[pid]) {
+          delete likes[pid];
+        } else {
+          likes[pid] = 1;
+          // 心跳弹出动画(先移除再强制回流,保证可重复触发)
+          if (likeHeart) {
+            likeHeart.classList.remove('pop');
+            void likeHeart.offsetWidth;
+            likeHeart.classList.add('pop');
+          }
+        }
+        writeJSON(LIKE_KEY, likes);
+        renderLike();
+      });
+    }
+
+    // ===== Utterances 评论区 =====
+    function utterTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'light'
+        ? 'github-light'
+        : 'github-dark';
+    }
+
+    var box = document.getElementById('comments-box');
+    if (box) {
+      var s = document.createElement('script');
+      s.src = 'https://utteranc.es/client.js';
+      s.setAttribute('repo', repo);
+      s.setAttribute('issue-term', 'pathname');
+      s.setAttribute('theme', utterTheme());
+      s.setAttribute('crossorigin', 'anonymous');
+      s.async = true;
+      box.innerHTML = '';
+      box.appendChild(s);
+
+      // 切换深浅色时,同步评论区主题
+      var observer = new MutationObserver(function () {
+        var iframe = box.querySelector('.utterances-frame');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(
+            { type: 'set-theme', theme: utterTheme() },
+            'https://utteranc.es',
+          );
+        }
+      });
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
   })();
 </script>
