@@ -54,7 +54,7 @@ if __name__ == '__main__':
 而ROS2代码则是一个节点的执行,是一整个奶茶店,店里要有员工、工牌、对讲机、店长调度，店要开着,等等更细更广的内容。
 顺便说一句：这段 ROS2 代码现在直接 Ctrl+C 退出，会蹦一串红色报错，先别慌——第六步会教你优雅地退出。
 
-![最简版 Ctrl+C 报错](/images/null_try.png)
+![最简版 Ctrl+C 报错](images/null_try.png)
 为突出主干，这里贴的是**最简版**（只有 `init` / `spin` / `shutdown` 三件套，省略了清理代码），方便你看清结构。带 `try/finally` 兜底清理的**完整版**见仓库的 `hello_world_node.py`，或直接跳到第六步。
 下面我们就来分别解释一下。
 ## 第二步，认识"直接开始"与"先开店"的差异
@@ -185,7 +185,7 @@ self.get_logger().info('hello')
 
 下面是 `ros2 run hello_world_pkg hello_world` 的真实运行截图，你可以亲眼看到时间戳、节点名和日志级别：
 
-![ros2 run 输出](/images/run_output.png)
+![ros2 run 输出](images/run_output.png)
 
 奶茶店翻译：print 像员工自己嘟囔一句，说完就散了。`get_logger().info()` 像用对讲机汇报——有频道、有记录，店长能统一监听。还记得第一步里提到的“对讲机”吗？就是它。
 ## 第六步 从脚本结束到交回工牌
@@ -223,10 +223,10 @@ Ctrl+C 会触发 `KeyboardInterrupt`，所以无论正常跑完还是被中断�
 > 下面两张图是我自己跑出来的对比：
 >
 > 有 try/finally 但没 `if rclpy.ok():`，Ctrl+C 还是会报错：
-> ![有 try 没 if 的报错](/images/null_if.png)
+> ![有 try 没 if 的报错](images/null_if.png)
 >
 > 加上 `if rclpy.ok():` 之后，Ctrl+C 干净退出：
-> ![try + if 干净退出](/images/null_error.png)
+> ![try + if 干净退出](images/null_error.png)
 >
 > 奶茶店翻译：下班锁门之前先确认门是不是已经锁了，别咔咔拧两下把锁拧坏。
 
@@ -245,7 +245,7 @@ ros2 run hello_world_pkg hello_world
 
 我自己踩这个坑时的真实截图，把打印内容改成 `hello ROS2` 但没 build，直接跑还是旧的 `hello world`：
 
-![改代码不 build 的翻车现场](/images/ros2_build.png)
+![改代码不 build 的翻车现场](images/ros2_build.png)
 
 从零建包（package.xml、setup.py 这些文件哪来的）和构建的完整步骤，见文末 GitHub 仓库的 README。
 
