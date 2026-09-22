@@ -391,6 +391,20 @@ a:hover {
   }
 }
 
+/* 文章内图片:不超出卡片,按比例缩放 */
+.article img {
+  display:
+    block;
+  max-width:
+    100%;
+  height:
+    auto;
+  margin:
+    1rem auto;
+  border-radius:
+    8px;
+}
+
 .site-footer {
   max-width:
     var(--width);
