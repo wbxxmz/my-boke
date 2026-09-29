@@ -437,6 +437,171 @@ a:hover {
     var(--color-muted);
 }
 
+/* ---------- 文章卡片内标签 ---------- */
+.post-card-tags {
+  margin-top:
+    0.6rem;
+  display:
+    flex;
+  flex-wrap:
+    wrap;
+  gap:
+    0.35rem;
+}
+
+.post-card-tag {
+  display:
+    inline-block;
+  padding:
+    0.15rem 0.55rem;
+  background:
+    var(--about-tag-bg);
+  border:
+    1px solid var(--about-section-border);
+  border-radius:
+    10px;
+  font-size:
+    0.75rem;
+  color:
+    var(--color-muted);
+  line-height:
+    1.4;
+}
+
+/* ---------- 文章列表页:主内容 + 侧边栏布局 ---------- */
+.posts-layout {
+  display:
+    grid;
+  grid-template-columns:
+    minmax(0, 1fr) 280px;
+  gap:
+    1.5rem;
+  align-items:
+    start;
+  max-width:
+    1080px;
+  margin:
+    0 auto;
+}
+
+.posts-layout #posts-content {
+  min-width:
+    0;
+}
+
+/* 标签侧边栏 —— 毛玻璃 + 背景隔离 */
+.tag-sidebar {
+  position:
+    sticky;
+  top:
+    5rem;
+  align-self:
+    start;
+}
+
+.tag-sidebar-inner {
+  background:
+    var(--card-bg);
+  border:
+    1px solid var(--card-border);
+  border-radius:
+    16px;
+  padding:
+    1.25rem;
+  backdrop-filter:
+    blur(14px) saturate(160%);
+  -webkit-backdrop-filter:
+    blur(14px) saturate(160%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.tag-sidebar-title {
+  margin:
+    0 0 1rem;
+  font-size:
+    1.05rem;
+  font-weight:
+    600;
+}
+
+.tag-cloud {
+  display:
+    flex;
+  flex-wrap:
+    wrap;
+  gap:
+    0.5rem;
+}
+
+.tag-cloud-item {
+  display:
+    inline-flex;
+  align-items:
+    center;
+  gap:
+    0.3rem;
+  padding:
+    0.3rem 0.75rem;
+  background:
+    var(--about-tag-bg);
+  border:
+    1px solid var(--about-section-border);
+  border-radius:
+    12px;
+  font-size:
+    0.82rem;
+  color:
+    var(--color-muted);
+  text-decoration:
+    none;
+  transition:
+    all 0.2s ease;
+}
+
+.tag-cloud-item:hover {
+  background:
+    var(--accent);
+  color:
+    #fff;
+  border-color:
+    var(--accent);
+  transform:
+    translateY(-1px);
+}
+
+.tag-count {
+  font-size:
+    0.72rem;
+  opacity:
+    0.7;
+  padding:
+    0 0.25rem;
+  border-radius:
+    6px;
+  background:
+    rgba(0, 0, 0, 0.12);
+}
+
+.tag-cloud-item:hover .tag-count {
+  background:
+    rgba(255, 255, 255, 0.2);
+  opacity:
+    1;
+}
+
+/* 侧边栏在窄屏隐藏(避免挤压正文) */
+@media (max-width: 768px) {
+  .posts-layout {
+    grid-template-columns:
+      1fr;
+  }
+  .tag-sidebar {
+    display:
+      none;
+  }
+}
+
 .site-footer {
   max-width:
     var(--width);

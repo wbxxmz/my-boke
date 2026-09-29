@@ -94,6 +94,12 @@ const postsData = allPosts.map((p) => ({
           '<img src="' + BASE + p.cover + '" alt="' + p.title + '" loading="lazy" style="' + styleStr + '" />' +
         '</a>';
       }
+      var tagsHtml = '';
+      if (p.tags && p.tags.length > 0) {
+        tagsHtml = '<div class="post-card-tags">' +
+          p.tags.map(function (t) { return '<span class="post-card-tag">#' + t + '</span>'; }).join('') +
+        '</div>';
+      }
       return '<li class="post-item popular-item' + (p.cover ? ' has-cover' : '') + '">' +
         '<span class="popular-rank rank-' + rank + '">' + rank + '</span>' +
         coverHtml +
@@ -104,6 +110,7 @@ const postsData = allPosts.map((p) => ({
             (views > 0 ? '<span class="popular-views">👁 ' + views + ' 次阅读</span>' : '') +
           '</p>' +
           '<p class="post-excerpt">' + p.description + '</p>' +
+          tagsHtml +
         '</div>' +
       '</li>';
     }).join('');

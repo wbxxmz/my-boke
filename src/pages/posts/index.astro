@@ -13,70 +13,101 @@ const allPosts = (await getCollection('posts')).sort(
 
 const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+// 统计所有标签及出现次数
+const tagCount = new Map<string, number>();
+allPosts.forEach((p) => {
+  p.data.tags.forEach((t) => tagCount.set(t, (tagCount.get(t) || 0) + 1));
+});
+const allTags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
 ---
 
 <BaseLayout title="全部文章">
-  <section id="posts-content" class="blog-content visible">
-    <h1 class="page-title" style="margin-top: 1rem;">全部文章</h1>
-    <ul class="post-list">
-      {
-        allPosts.map((post, idx) => (
-          <li
-            class={`post-item${post.data.cover ? ' has-cover' : ''}${
-              post.data.updatedDate &&
-              post.data.updatedDate.valueOf() !== post.data.pubDate.valueOf()
-                ? ' has-update'
-                : ''
-            }`}
-            data-page={Math.floor(idx / PAGE_SIZE) + 1}
-          >
-            {post.data.cover && (
-              <a href={`${base}posts/${post.id}/`} class="post-cover">
-                <img
-                  src={`${base}${post.data.cover.replace(/^\//, '')}`}
-                  alt={post.data.title}
-                  loading="lazy"
-                  style={`${post.data.coverFit ? `object-fit:${post.data.coverFit};` : ''}${post.data.coverPosition ? `object-position:${post.data.coverPosition};` : ''}`}
-                />
-              </a>
-            )}
-            <div class="post-info">
-              <h2>
-                <a href={`${base}posts/${post.id}/`}>{post.data.title}</a>
-              </h2>
-              <p class="post-meta">
-                <time datetime={post.data.pubDate.toISOString()}>
-                  {post.data.pubDate.toLocaleDateString('zh-CN')}
-                </time>
-              </p>
-              <p class="post-excerpt">{post.data.description}</p>
-            </div>
-            {post.data.updatedDate &&
-              post.data.updatedDate.valueOf() !==
-                post.data.pubDate.valueOf() && (
-                <span class="post-updated" title="文章最近修改时间">
-                  ✎ 更新于{' '}
-                  {post.data.updatedDate.toLocaleDateString('zh-CN')}
-                </span>
-              )}
-          </li>
-        ))
-      }
-    </ul>
-
-    <!-- 分页导航 -->
-    {totalPages > 1 && (
-      <nav class="pagination" aria-label="文章分页">
-        <a class="page-btn disabled" data-page-prev>← 上一页</a>
+  <div class="posts-layout">
+    <section id="posts-content" class="blog-content visible">
+      <h1 class="page-title" style="margin-top: 1rem;">全部文章</h1>
+      <ul class="post-list">
         {
-          pageNumbers.map((n) => (
-            <a class="page-btn" data-page-num={n}>{n}</a>
+          allPosts.map((post, idx) => (
+            <li
+              class={`post-item${post.data.cover ? ' has-cover' : ''}${
+                post.data.updatedDate &&
+                post.data.updatedDate.valueOf() !== post.data.pubDate.valueOf()
+                  ? ' has-update'
+                  : ''
+              }`}
+              data-page={Math.floor(idx / PAGE_SIZE) + 1}
+            >
+              {post.data.cover && (
+                <a href={`${base}posts/${post.id}/`} class="post-cover">
+                  <img
+                    src={`${base}${post.data.cover.replace(/^\//, '')}`}
+                    alt={post.data.title}
+                    loading="lazy"
+                    style={`${post.data.coverFit ? `object-fit:${post.data.coverFit};` : ''}${post.data.coverPosition ? `object-position:${post.data.coverPosition};` : ''}`}
+                  />
+                </a>
+              )}
+              <div class="post-info">
+                <h2>
+                  <a href={`${base}posts/${post.id}/`}>{post.data.title}</a>
+                </h2>
+                <p class="post-meta">
+                  <time datetime={post.data.pubDate.toISOString()}>
+                    {post.data.pubDate.toLocaleDateString('zh-CN')}
+                  </time>
+                </p>
+                <p class="post-excerpt">{post.data.description}</p>
+                {post.data.tags.length > 0 && (
+                  <div class="post-card-tags">
+                    {post.data.tags.map((t) => (
+                      <span class="post-card-tag">#{t}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {post.data.updatedDate &&
+                post.data.updatedDate.valueOf() !==
+                  post.data.pubDate.valueOf() && (
+                  <span class="post-updated" title="文章最近修改时间">
+                    ✎ 更新于{' '}
+                    {post.data.updatedDate.toLocaleDateString('zh-CN')}
+                  </span>
+                )}
+            </li>
           ))
         }
-        <a class="page-btn" data-page-next>下一页 →</a>
-      </nav>
-    )}
-  </section>
+      </ul>
+
+      <!-- 分页导航 -->
+      {totalPages > 1 && (
+        <nav class="pagination" aria-label="文章分页">
+          <a class="page-btn disabled" data-page-prev>← 上一页</a>
+          {
+            pageNumbers.map((n) => (
+              <a class="page-btn" data-page-num={n}>{n}</a>
+            ))
+          }
+          <a class="page-btn" data-page-next>下一页 →</a>
+        </nav>
+      )}
+    </section>
+
+    <!-- 右侧标签侧边栏 -->
+    <aside class="tag-sidebar">
+      <div class="tag-sidebar-inner">
+        <h3 class="tag-sidebar-title">🏷 标签导航</h3>
+        <div class="tag-cloud">
+          {allTags.map(([tag, count]) => (
+            <a href={`${base}tags/${tag}/`} class="tag-cloud-item">
+              <span>#{tag}</span>
+              <span class="tag-count">{count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  </div>
 </BaseLayout>
 
 <script>
