@@ -473,13 +473,13 @@ a:hover {
   display:
     grid;
   grid-template-columns:
-    minmax(0, 1fr) 280px;
+    var(--width) 260px;
   gap:
     1.5rem;
   align-items:
     start;
   max-width:
-    1080px;
+    calc(var(--width) + 260px + 1.5rem);
   margin:
     0 auto;
 }
@@ -487,6 +487,8 @@ a:hover {
 .posts-layout #posts-content {
   min-width:
     0;
+  max-width:
+    var(--width);
 }
 
 /* 标签侧边栏 —— 毛玻璃 + 背景隔离 */
