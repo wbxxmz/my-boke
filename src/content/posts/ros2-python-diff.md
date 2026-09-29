@@ -2,6 +2,7 @@
 title: 同样是Python,为什么ROS2代码看起来完全不一样
 pubDate: 2026-09-22
 description: 从奶茶店的视角,理解 ROS2 Python 代码和普通 Python 的根本差异:从函数到类、从顺序执行到回调驱动、从 print 到 logger。
+category: ros2学习日志
 tags:
   - ROS2
   - Python

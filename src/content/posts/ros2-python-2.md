@@ -1,96 +1,98 @@
 ---
 title: 同样是 Python，为什么 ROS2 节点之间不能直接调用函数？
 pubDate: 2026-09-29
-description: 用奶茶店比喻讲清 ROS2 节点间的三种通信方式——话题、服务和参数，为什么不能像普通 Python 那样直接调用函数。
+description: 从奶茶店的视角，理解 ROS2 节点间的三种通信方式——话题、服务和参数，为什么不能像普通 Python 那样直接 import 调函数。
+category: ros2学习日志
 tags:
   - ROS2
   - Python
   - 机器人
 ---
 
-# 同样是 Python，为什么 ROS2 节点之间不能直接调用函数？
+## 导言
 
-## 开头
+上一篇博客我写了 ROS2 代码为什么看起来不一样。核心观点是：普通 Python 是"我调用别人"，ROS2 是"别人调用我"——这叫**控制反转**。
 
-上一篇博客我写了 ROS2 代码为什么看起来不一样。核心观点是：普通 Python 是“我调用别人”，ROS2 是“别人调用我”。
+那篇写的是**一个节点内部**的事——你的代码怎么被框架调用。这篇写另一个初学者绕不开的问题：**既然节点是独立进程，它们之间怎么说话？**
 
-这篇写另一个初学者绕不开的问题：**既然节点是独立进程，它们之间怎么说话？**
-
-在普通 Python 里，这很简单——`import` 另一个模块，调用它的函数，拿返回值。但在 ROS2 里，你不能这样做。
+在普通 Python 里，这太简单了——`import` 另一个模块，调用它的函数，拿返回值，完事。但在 ROS2 里，你不能这样做。
 
 为什么？
 
-这篇用奶茶店把这件事讲清楚。每个比喻后面我都会跟一句技术翻译，确保你既记住了奶茶，也记住了 ROS2。
+因为节点之间不能直接调函数，只能**发消息**。这就是这篇的核心观点——**消息传递**：不是你调用另一个节点的函数，是你把数据打包成消息发出去，框架负责传递，对方收到后自己处理。
 
-> 环境：Ubuntu 22.04 + ROS2 Humble + Python 3.10  
-> 完整代码：[GitHub 链接]
+这篇还是用奶茶店把这件事讲清楚。每个比喻后面我都会跟一句技术翻译，确保你既记住了奶茶，也记住了 ROS2。
 
+> 环境：Ubuntu 22.04 + ROS2 Humble + Python 3.10
+> 完整代码：[wbxxmz/ros2-hello-world](https://github.com/wbxxmz/ros2-hello-world)
 
-## 一、普通 Python 的通信方式
+## 先看普通 Python 怎么通信
 
 先看普通 Python 怎么做。
 
 ```python
 # module_a.py
-def get_sensor_data():
+def get_sensor_data():                      # 定义一个函数，返回传感器数据
     return 42
 
 # module_b.py
-from module_a import get_sensor_data
+from module_a import get_sensor_data        # 把 module_a 的函数 import 进来
 
-data = get_sensor_data()
-print(data)
+data = get_sensor_data()                     # 直接调用，拿到返回值
+print(data)                                  # 打印
 ```
 
 `module_b` 直接调用 `module_a` 的函数，拿到返回值，继续干活。
 
 **特点**：
 
-- 同步：调用后等返回
-- 紧耦合：`module_b` 必须知道 `module_a` 的函数名
-- 进程内：同一个 Python 进程里
-- 直接：函数调用，拿返回值
+- **同步**：调用后站在原地等返回
+- **紧耦合**：`module_b` 必须知道 `module_a` 的函数名，还得能 import 到
+- **进程内**：同一个 Python 进程里，共享同一块内存
+- **直接**：函数调用，拿返回值，一步到位
 
 记住这四条——等会儿在 ROS2 里它们会被逐条推翻，对比着看，差异就全出来了。
 
-**奶茶店翻译**：这像后厨和点单员是同一个人。点单员直接问后厨“珍珠煮好了吗”，后厨回答“好了”。一句话的事，不需要对讲机。
+**奶茶店翻译**：这像后厨和点单员是同一个人。点单员直接问后厨"珍珠煮好了吗"，后厨回答"好了"。一句话的事，不需要对讲机。
 
-**但 ROS2 里，点单员和后厨是两个人，不在同一个房间。**
+**但 ROS2 里，点单员和后厨是两个人，不在同一个房间，甚至不在同一家店。**
 
+## 为什么 ROS2 不能直接调用函数
 
-## 二、ROS2 为什么不能这样
+ROS2 的节点是**独立进程**。"独立进程"这四个字听起来平平无奇，但它带来的后果是初学者最容易低估的：
 
-ROS2 的节点是**独立进程**。它们可能：
-
-- 跑在同一台机器上，也可能跑在不同机器上
-- 用 Python 写，也可能用 C++ 写
-- 同时运行，也可能先后启动
-- 一个节点崩溃，不影响其他节点
+- 它们可能跑在**同一台机器**上，也可能跑在**不同机器**上（一个在工控机，一个在云端）
+- 可能用 **Python** 写，也可能用 **C++** 写——你总不能让 Python import 一个 C++ 的函数吧
+- 可能**同时运行**，也可能**先后启动**——A 节点启动时 B 节点还没起来
+- **一个节点崩了，不影响其他节点**——这是隔离带来的好处，但也意味着它们之间没有共享内存
 
 **技术翻译**：进程隔离意味着两个节点各有各的内存空间，互相看不见对方的函数和变量，自然也没有直接函数调用。你需要一种**跨进程通信机制**——说白了就是两个进程之间交换数据的办法：不直接调函数，而是把数据打包成消息发出去，对方收到后自己拆开处理。
 
-**奶茶店翻译**：点单员和后厨是两个人，不在同一个房间。点单员不能直接喊“珍珠煮好了吗”，因为后厨可能听不见，可能不在，可能在忙别的。他们需要对讲机。
+这就是**消息传递**——和上一篇的"控制反转"是同一套思维的两面：节点内部，框架调你（控制反转）；节点之间，你发消息、框架传（消息传递）。
 
-对讲机就是 ROS2 的通信机制。但“通信”不止一种方式，ROS2 提供了三种：
+**奶茶店翻译**：点单员和后厨是两个人，不在同一个房间。点单员不能直接喊"珍珠煮好了吗"，因为后厨可能听不见，可能不在，可能在忙别的。他们需要对讲机。
+
+对讲机就是 ROS2 的通信机制。但"通信"不止一种方式，ROS2 提供了三种：
 
 - **话题**：广播
 - **服务**：点单
 - **参数**：调配方
 
+下面我们一种一种来。为了和上一篇的风格保持一致，每种我都会先给普通 Python 的做法，再给 ROS2 的做法，最后用奶茶店翻译收口。
 
-## 三、话题——广播模式
+## 话题：广播
 
 ### 奶茶店版本
 
-话题就像店里的广播。点单员对着对讲机喊“3 号桌要一杯珍珠奶茶”，所有在后厨的人都听到了。谁关心谁处理，不关心的继续干自己的活。
+话题就像店里的**广播喇叭**。点单员对着对讲机喊"3 号桌要一杯珍珠奶茶"，所有在后厨的人都听到了。谁关心谁处理，不关心的继续干自己的活。
 
 点单员不关心谁听到了，也不等回复。喊完就继续接下一单。
 
 ### 技术翻译
 
 - 发布者/订阅者模型
-- 异步：发布者不等订阅者
-- 多对多：一个话题可以有多个发布者和多个订阅者
+- **异步**：发布者不等订阅者
+- **多对多**：一个话题可以有多个发布者和多个订阅者
 - 适合场景：传感器数据流、持续的状态广播
 
 ### 代码示例
@@ -103,39 +105,34 @@ from std_msgs.msg import String
 # 发布者
 class Talker(Node):
     def __init__(self):
-        super().__init__('talker')
-        self.pub = self.create_publisher(String, 'chat', 10)
-        self.create_timer(1.0, self.timer_callback)
+        super().__init__('talker')                       # 挂工牌，节点名 talker
+        self.pub = self.create_publisher(String, 'chat', 10)  # 往 chat 频道挂广播喇叭
+        self.create_timer(1.0, self.timer_callback)      # 排班：每秒喊一次
 
     def timer_callback(self):
-        msg = String()
-        msg.data = 'hello'
-        self.pub.publish(msg)
-        self.get_logger().info(f'发布: {msg.data}')
+        msg = String()                                    # 拿一张空白纸条（String 类型的消息对象）
+        msg.data = 'hello'                                # 在纸条上写内容，data 是 String 消息唯一的字段
+        self.pub.publish(msg)                            # 喊出去，不等任何人
+        self.get_logger().info(f'发布: {msg.data}')      # 用对讲机记一笔"我喊了 hello"
 
 # 订阅者
 class Listener(Node):
     def __init__(self):
-        super().__init__('listener')
-        self.sub = self.create_subscription(String, 'chat', self.callback, 10)
+        super().__init__('listener')                     # 挂工牌，节点名 listener
+        self.sub = self.create_subscription(
+            String, 'chat', self.callback, 10)           # 声明：我听 chat 频道
 
-    def callback(self, msg):
-        self.get_logger().info(f'收到: {msg.data}')
+    def callback(self, msg):                              # 数据到了，框架来调我
+        self.get_logger().info(f'收到: {msg.data}')      # 从纸条上读内容，用对讲机记一笔
 ```
 
-### 逐行拆解（和普通 Python 对着看）
+### 逐行拆解（重点看和普通 Python 的差异）
 
-**Talker（发布者）**：
+代码注释已经把每行的奶茶店含义讲了，这里只挑几个**普通 Python 里没有、容易误解**的点展开：
 
-- `super().__init__('talker')`：把自己注册进 ROS2 系统，节点名叫 talker。普通 Python 里类实例化只是内存里多个对象，谁也不知道它存在。
-- `create_publisher(String, 'chat', 10)`：往 `chat` 频道挂一个广播喇叭，`10` 是队列深度（发得比收得快时最多先攒 10 条）。注意：你没有拿到任何"订阅者"的引用——不知道、也不需要知道谁在听。
-- `create_timer(1.0, self.timer_callback)`：上一篇讲过的控制反转。不是你写 `while True` 循环，是框架每秒来调你一次。
-- `self.pub.publish(msg)`：喊出去就完事，不等任何人。对比 `data = get_sensor_data()`——那是要停下来等返回值的。
-
-**Listener（订阅者）**：
-
-- `create_subscription(String, 'chat', self.callback, 10)`：声明"我听 `chat` 频道，消息来了调我的 callback"。
-- `callback(self, msg)`：全文最"ROS2"的一行。**数据到了，是框架来调你这个函数，不是你伸手去拿。**你从"主动要数据的人"变成了"被通知的人"。
+- `create_publisher(String, 'chat', 10)`：你没有拿到任何"订阅者"的引用——不知道、也不需要知道谁在听。普通 Python 调函数必须知道对方是谁，这里双方只需要约定频道名 `chat`。
+- `callback(self, msg)`：这是话题最核心的一点——**数据到了，是框架来调你，不是你伸手去拿。** 普通 Python 是 `data = get_data()` 主动取；这里你从"主动要数据的人"变成了"被通知的人"。
+- 其他行（挂工牌、排班、拿纸条、写内容、喊出去）注释里已经讲清楚，和上一篇的节点结构一致，不再重复。
 
 | | 普通 Python | ROS2 话题 |
 |---|---|---|
@@ -145,6 +142,16 @@ class Listener(Node):
 | 等不等结果 | 等返回值 | 发完就走 |
 
 > 为了聚焦通信本身，本文示例都省略了 `main` 函数（`rclpy.init`、`spin` 和资源清理）。完整可运行代码放在 GitHub 仓库里，结构和上一篇的 hello_world 一样。
+
+### 为什么话题是异步的
+
+你可能会问：发布者为什么不等订阅者？
+
+因为机器人身上，传感器数据是**持续不断**地产生的——雷达每秒 10 次、摄像头每秒 30 帧。如果发布者每发一条都要等订阅者处理完，那传感器就被卡住了，下一帧数据没人收。
+
+所以话题的设计是：**我只负责把数据扔出去，谁爱收谁收，收不收得到、什么时候收，跟我没关系。**
+
+奶茶店翻译：广播喇叭喊"3 号桌珍珠奶茶"，后厨的人听到了就做，没听到（或不在岗）就这单丢了。点单员不会因为后厨没人就一直举着喇叭等——他还有下一单要接。
 
 ### 什么时候用
 
@@ -158,20 +165,21 @@ class Listener(Node):
 - 需要等一个回复才能继续
 - 任务是一次性的，不是持续流
 
+这就是**消息传递**的第一种形式：我把数据扔出去，谁爱收谁收，不指望回复。
 
-## 四、服务——点单模式
+## 服务：点单
 
 ### 奶茶店版本
 
-服务就像顾客点单。顾客问“你们有没有珍珠？”店员回答“有”或“没有”。顾客等回答，拿到回答才继续。
+服务就像**顾客点单**。顾客问"你们有没有珍珠？"店员回答"有"或"没有"。顾客等回答，拿到回答才继续。
 
 这是一问一答，有明确的请求和响应。
 
 ### 技术翻译
 
 - 客户端/服务端模型
-- 同步：客户端发请求后等响应
-- 一对一：一个请求对应一个响应
+- **同步**：客户端发请求后等响应
+- **一对一**：一个请求对应一个响应
 - 适合场景：一次性查询、配置修改、触发某个动作
 
 ### 代码示例
@@ -182,52 +190,63 @@ from example_interfaces.srv import AddTwoInts
 # 服务端
 class AddServer(Node):
     def __init__(self):
-        super().__init__('add_server')
-        self.srv = self.create_service(AddTwoInts, 'add_two_ints', self.add_callback)
+        super().__init__('add_server')                       # 挂工牌，节点名 add_server
+        self.srv = self.create_service(
+            AddTwoInts, 'add_two_ints', self.add_callback)  # 挂出服务窗口，窗口名 add_two_ints
 
-    def add_callback(self, request, response):
-        response.sum = request.a + request.b
-        self.get_logger().info(f'{request.a} + {request.b} = {response.sum}')
-        return response
+    def add_callback(self, request, response):             # 请求到了，框架来调我
+        response.sum = request.a + request.b               # 把结果写在小票的 sum 字段上
+        self.get_logger().info(f'{request.a} + {request.b} = {response.sum}')  # 用对讲机记一笔
+        return response                                     # 把小票递回窗口
 
 # 客户端
 class AddClient(Node):
     def __init__(self):
-        super().__init__('add_client')
-        self.client = self.create_client(AddTwoInts, 'add_two_ints')
-        while not self.client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('等待服务端...')
-        self.send_request()
+        super().__init__('add_client')                       # 挂工牌，节点名 add_client
+        self.client = self.create_client(
+            AddTwoInts, 'add_two_ints')                     # 找到 add_two_ints 窗口，拿号排队
+        while not self.client.wait_for_service(timeout_sec=1.0):  # 窗口没开张，每隔1秒问一次
+            self.get_logger().info('等待服务端...')          # 用对讲机念叨一句"还没开门"
+        self.send_request()                                  # 窗口开了，进去办业务
 
     def send_request(self):
-        request = AddTwoInts.Request()
-        request.a = 3
-        request.b = 5
-        self.future = self.client.call_async(request)
-        self.future.add_done_callback(self.response_callback)
+        request = AddTwoInts.Request()                       # 拿一张空白点单条
+        request.a = 3                                        # 在点单条上填 a=3
+        request.b = 5                                        # 在点单条上填 b=5
+        self.future = self.client.call_async(request)       # 把点单条递进去，不原地等
+        self.future.add_done_callback(self.response_callback)  # 小票出好了再叫我
 
-    def response_callback(self, future):
-        response = future.result()
-        self.get_logger().info(f'结果: {response.sum}')
+    def response_callback(self, future):                     # 小票出好了，框架来叫我
+        response = future.result()                            # 从小票里取出结果
+        self.get_logger().info(f'结果: {response.sum}')      # 看一眼找零，用对讲机记一笔
 ```
 
-### 逐行拆解（和普通 Python 对着看）
+### 逐行拆解（重点看和普通 Python 的差异）
 
-**AddServer（服务端）**：
+同样，注释里讲过的不再重复，只挑几个关键点：
 
-- `create_service(AddTwoInts, 'add_two_ints', self.add_callback)`：挂出一个服务窗口，声明"加法业务在这里办"，窗口名叫 `add_two_ints`。
-- `add_callback(self, request, response)`：和普通函数的两大区别：
-  - 参数不是你挑的——`request` 是接口定义好的请求结构体（`a`、`b`），相当于顾客递进来的点单条
-  - 结果不是 `return` 一个裸值——要填进 `response` 再还回去，相当于把找零写在小票上
-- 这个函数同样不是你调的：请求到了，框架来调你。
+**服务端**：
 
-**AddClient（客户端）**：
+- `add_callback(self, request, response)` 和普通函数的两个本质区别：
+  - **参数不是你定的**：`request`、`response` 是接口定义好的结构体，字段名（`a`、`b`、`sum`）来自 `AddTwoInts.srv`，相当于点单条和小票的格式是预先约定好的，你只能填不能改。
+  - **结果不能直接 `return` 裸值**：要写进 `response` 再 `return response`。因为框架需要拿到完整的响应对象去序列化、回传给客户端。
 
-- `wait_for_service(timeout_sec=1.0)`：普通 Python 里 import 完函数就一定在；ROS2 的服务端是独立进程，可能还没启动，所以要先等窗口开张。
-- `AddTwoInts.Request()`、`request.a = 3`：填点单条。字段名来自接口定义，不是随意的参数列表。
-- `call_async(request)` + `add_done_callback(...)`：发出请求后**不原地干等**，而是"回复到了再叫我"。为什么不能像普通函数一样同步等？因为节点只有一个执行循环在转，你卡住等回复，节点上其他活就全停了。
+**客户端**：
 
-**最关键的一个对比**：普通 Python 的 `data = get_sensor_data()` 一行就完成了"发请求 + 等结果"；ROS2 拆成两段——`call_async` 负责发，`response_callback` 负责收。不是 ROS2 爱啰嗦，是"别人调用我"的模型下，你没法原地等。
+- `wait_for_service`：普通 Python `import` 完函数就一定存在；ROS2 服务端是独立进程，可能还没启动，所以必须先等。这是分布式系统的常态——你不能假设对方在线。
+- `call_async` + `future`：这是服务最核心的设计。`call_async` 发出请求后**立即返回**，不阻塞等待。返回的 `future` 是一个"未来会有结果"的占位对象，配合 `add_done_callback` 实现"结果到了再通知我"。如果用同步的 `call`，等待期间节点的所有回调（订阅、定时器、其他服务）全部停摆。
+
+**一句话对比**：普通 Python `data = get_sensor_data()` 一行完成"发请求 + 等结果"；ROS2 拆成"发请求（`call_async`）+ 收结果（`response_callback`）"两步——不是啰嗦，是节点不能因为等一个回复就冻住。
+
+### 为什么不能像普通函数那样同步等
+
+你可能会想：我就想同步等，不行吗？
+
+行，但不推荐。如果你用同步调用（`call`），在等待响应的这段时间里，你的节点**什么都干不了**——订阅消息收不到、定时器不触发、其他服务请求不响应。而机器人系统里，一个节点往往同时干好几件事，你不能因为等一个回复就把整个节点冻住。
+
+所以 ROS2 默认用 `call_async`——发出去就继续干别的，回复到了再通过回调通知你。
+
+奶茶店翻译：顾客点单后站在窗口干等，等的时候啥也干不了——这是同步。但店里如果只有一个店员，他站在窗口等后厨回话，外面排队的顾客就没人接待了。所以实际做法是：点单员把单子递进去，先去接待下一位顾客，后厨做好了再叫他。这就是异步。
 
 ### 什么时候用
 
@@ -242,12 +261,13 @@ class AddClient(Node):
 - 发布者不需要等回复
 - 任务耗时很长（这时候用 Action 更合适，后面会写）
 
+这就是**消息传递**的第二种形式：我发一个请求消息，等对方回一个响应消息，一问一答。
 
-## 五、参数——调配方
+## 参数：调配方
 
 ### 奶茶店版本
 
-参数就像店里的配方表。珍珠煮多久、糖放多少、冰加几块，这些不是“通信”，是配置。
+参数就像店里的**配方表**。珍珠煮多久、糖放多少、冰加几块，这些不是"通信"，是配置。
 
 店长可以随时调整配方，所有员工按新配方执行。顾客不关心配方，只关心奶茶好不好喝。
 
@@ -263,31 +283,31 @@ class AddClient(Node):
 ```python
 class ConfigurableNode(Node):
     def __init__(self):
-        super().__init__('configurable_node')
+        super().__init__('configurable_node')                # 挂工牌，节点名 configurable_node
 
-        # 声明参数
-        self.declare_parameter('publish_frequency', 1.0)
-        self.declare_parameter('message_content', 'hello')
+        # 声明参数（不声明就用，会报错）
+        self.declare_parameter('publish_frequency', 1.0)     # 登记：我有个配置项叫 publish_frequency，默认 1.0
+        self.declare_parameter('message_content', 'hello')   # 登记：我有个配置项叫 message_content，默认 hello
 
         # 获取参数
-        freq = self.get_parameter('publish_frequency').value
+        freq = self.get_parameter('publish_frequency').value  # 读出发布频率的默认值
 
-        self.pub = self.create_publisher(String, 'chat', 10)
-        self.create_timer(freq, self.timer_callback)
+        self.pub = self.create_publisher(String, 'chat', 10)  # 往 chat 频道挂广播喇叭（同话题那节）
+        self.create_timer(freq, self.timer_callback)          # 按读出的频率排班
 
     def timer_callback(self):
-        msg = String()
+        msg = String()                                        # 拿一张空白纸条
         msg.data = self.get_parameter('message_content').value  # 每次发布前读最新值
-        self.pub.publish(msg)
+        self.pub.publish(msg)                                 # 喊出去
 ```
 
-### 逐行拆解（和普通 Python 对着看）
+### 逐行拆解（重点看和普通 Python 的差异）
 
-- `declare_parameter('publish_frequency', 1.0)`：普通 Python 里 `self.freq = 1.0` 赋值就能用；ROS2 参数要先**声明**——登记"我这个节点有这个配置项，默认 1.0"。不声明就 get 或 set，都会报错（第七节的错误四就是它）。
-- `get_parameter('publish_frequency').value`：普通 Python 直接读 `self.freq`；这里要多敲一层 `.value`——参数系统存的是"带类型的值"，`.value` 才把真正的数字取出来。
-- `msg.data = self.get_parameter('message_content').value`：**用的时候现读**。参数值变了不会自动同步到你的变量里，这正是下面"运行时修改"要讲的那件事。
+- `declare_parameter('publish_frequency', 1.0)`：参数必须**先声明后使用**，不声明直接 `get` 或 `set` 会报 `Parameter not declared`。普通 Python 里 `self.freq = 1.0` 赋值即用，没有这一步。声明的意义是把参数登记到节点名下，让外部（CLI、launch 文件、其他节点）能发现和修改它。
+- `get_parameter(...).value`：多出来的 `.value` 不是多余的——参数系统内部存的是 `ParameterValue` 类型（带类型标签的包装），`.value` 才取出原始的 Python 值（int/float/string/bool）。
+- `msg.data = self.get_parameter('message_content').value`：**用的时候现读**是关键。`ros2 param set` 只改了参数系统里存的值，不会自动同步到你之前缓存的变量。上面 `message_content` 每次发布前都重读所以能生效；而 `publish_frequency` 在 `create_timer` 时就读走了，之后 set 也没用——除非注册参数回调去重建 timer。
 
-**最关键的一个对比**：普通 Python 的配置就是普通变量，赋值完随便读；ROS2 的参数是登记在节点名下的键值对，有自己的声明规则和读写接口——本质上像节点自带的迷你配置服务。第四节学的服务知识在这里直接复用：`ros2 param set` 底层就是在调这个节点的 `set_parameters` 服务。
+`create_publisher`、`create_timer`、`publish` 和话题那节完全一致，不再重复。
 
 运行时修改：
 
@@ -296,7 +316,9 @@ ros2 param set /configurable_node publish_frequency 2.0
 ros2 param set /configurable_node message_content "world"
 ```
 
-> **重要**：`ros2 param set` 只是更新了节点里参数存的值，代码要"用的时候去读"，新值才会生效。上面 `timer_callback` 每次发布前都重新读 `message_content`，所以 set 完下一条消息就变了；而 `publish_frequency` 不行——timer 的频率在 `create_timer` 那一刻就定死了，set 之后没有任何代码去重建 timer，改了也不会变（CLI 还会返回成功，更具迷惑性）。想让参数一变就自动触发逻辑（比如运行时改频率），需要注册参数回调，属于进阶内容。现在先记住这句：**set 了 ≠ 生效，读了才生效**。
+> **重要：我自己踩过的坑**：`ros2 param set` 只是更新了节点里参数存的值，代码要"用的时候去读"，新值才会生效。上面 `timer_callback` 每次发布前都重新读 `message_content`，所以 set 完下一条消息就变了；而 `publish_frequency` 不行——timer 的频率在 `create_timer` 那一刻就定死了，set 之后没有任何代码去重建 timer，改了也不会变（CLI 还会返回成功，更具迷惑性）。
+>
+> 我当时改了频率发现没变，还以为是命令没执行成功，反复 set 了好几遍。后来才明白：**set 了 ≠ 生效，读了才生效**。想让参数一变就自动触发逻辑（比如运行时改频率），需要注册参数回调，属于进阶内容。现在先记住这句就够了。
 
 ### 什么时候用
 
@@ -311,8 +333,9 @@ ros2 param set /configurable_node message_content "world"
 - 需要一对多广播
 - 需要请求/响应
 
+参数严格来说不算"节点间通信"，但它是节点运行时配置的标准方式，和话题、服务一起构成了 ROS2 节点和外部交互的三种手段。
 
-## 六、三种机制对比
+## 三种机制对比
 
 | 维度 | 话题 | 服务 | 参数 |
 |---|---|---|---|
@@ -324,27 +347,63 @@ ros2 param set /configurable_node message_content "world"
 | 奶茶店翻译 | 广播 | 点单 | 调配方 |
 | 典型例子 | 相机图像 | 查询地图 | 发布频率 |
 
+## 为什么需要三种，不能只用一种
 
-## 七、常见错误
+你可能会想：既然都是"发消息"，为什么不统一成一种？比如全用服务，或者全用话题？
+
+因为机器人系统里**同时存在三种完全不同的需求**，一种机制满足不了。用一个具体场景串起来看就清楚了——假设你在做一台自主导航机器人：
+
+**场景一：激光雷达持续扫描周围障碍物**
+
+雷达每秒转 10 圈，每圈产生一帧点云数据。这些数据要送给导航模块、避障模块、建图模块同时使用。
+
+如果用**服务**：导航模块发一次请求拿一帧数据，那避障和建图也得各自发请求——三个客户端轮询同一个服务端，频率高了服务端扛不住，频率低了数据有延迟。而且服务是"一问一答"，你拿完这帧，下一帧还得再问一次，天生不适合持续流。
+
+如果用**参数**：参数是节点自己的配置，雷达数据不是配置，根本不是一回事。
+
+所以只能用**话题**：雷达往 `/scan` 频道广播，谁需要谁订阅，一帧数据多个模块同时收到，发布者不管谁在听。
+
+**场景二：导航模块查询"某个坐标能不能走"**
+
+导航到了一个岔路口，需要问地图服务"（3, 5）这个点是障碍物还是可通行区域"。这个问题有明确的答案，而且导航模块必须拿到答案才能决定往哪走。
+
+如果用**话题**：导航模块发一个"查询请求"话题，然后等地图模块发一个"查询结果"话题。但你得自己处理：请求和响应怎么配对？万一地图模块没收到请求怎么办？等多久算超时？多个导航模块同时问，响应怎么区分？——这些本来是服务该干的活，用话题就得自己造轮子。
+
+如果用**参数**：还是不对，这不是配置。
+
+所以只能用**服务**：导航模块发请求，地图模块回响应，一问一答，框架帮你处理配对和超时。
+
+**场景三：调试时想把避障距离从 0.5 米改成 0.3 米**
+
+这个值是避障节点自己的配置，改完它下次判断障碍时用新值就行。不需要通知别的节点，也不需要谁回复。
+
+如果用**话题**：你得发一条"配置变更"消息，避障节点订阅后自己改——但这本来就是它自己的事，为什么要走通信？而且如果避障节点还没启动，这条消息就丢了，配置没改成。
+
+如果用**服务**：你得写一个"设置配置"的服务，然后客户端去调——杀鸡用牛刀，而且服务是一次性的，改完就没了，下次启动还得再改一次。
+
+所以只能用**参数**：直接 `ros2 param set`，值存在节点里，启动时也能通过 launch 文件加载，不需要通信。
+
+**一句话总结**：三种机制不是设计冗余，是各管一摊——**话题管持续数据流，服务管一次性请求响应，参数管节点自身配置**。选错了不是不能用，是别扭、低效、容易出 bug。常见错误那节讲的就是典型的"该用 A 却用了 B"。
+
+## 常见错误：我踩过的坑
 
 **错误一：用话题做请求/响应**
 
-发布一个“请求”话题，等一个“响应”话题。这本质上是在用话题模拟服务，复杂且容易出错。需要一问一答，直接用服务。
+发布一个"请求"话题，等一个"响应"话题。这本质上是在用话题模拟服务，复杂且容易出错——你还得自己处理超时、匹配请求和响应、处理多个客户端的情况。需要一问一答，直接用服务。
 
 **错误二：用服务传持续数据**
 
-服务是一次性的，不适合高频数据流。传感器数据用话题。
+服务是一次性的，不适合高频数据流。传感器数据用话题，别图省事用服务轮询——轮询频率高了卡，低了延迟大，两头不讨好。
 
 **错误三：把参数当通信手段**
 
-参数是节点自己的配置，不是用来在节点之间传数据的。如果你想“通知”另一个节点某个值变了，应该用话题，不是参数。
+参数是节点自己的配置，不是用来在节点之间传数据的。如果你想"通知"另一个节点某个值变了，应该用话题，不是参数。参数是"我自己的配方"，不是"我跟别人说的话"。
 
 **错误四：忘了参数要先声明**
 
-ROS2 里参数必须先 `declare_parameter` 才能 `get_parameter`。不声明就取，会报错。
+ROS2 里参数必须先 `declare_parameter` 才能 `get_parameter`。不声明就取，会报 `Parameter not declared` 错误。我一开始图省事直接 get，结果报错了还以为是参数没设置，后来才发现是连声明都没声明。
 
-
-## 八、回到第一篇的核心观点
+## 回到核心观点
 
 第一篇讲的是**控制反转**：不是你调用框架，是框架调用你。
 
@@ -354,16 +413,20 @@ ROS2 里参数必须先 `declare_parameter` 才能 `get_parameter`。不声明�
 
 > **你声明要做什么，框架负责什么时候做、怎么传。**
 
-**奶茶店翻译**：你不是自己冲奶茶，也不是直接指挥后厨。你开了家店，定了规矩，店长负责调度，对讲机负责传话。
+**奶茶店翻译**：你不是自己冲奶茶，也不是直接指挥后厨。你开了家店，定了规矩，店长负责调度，对讲机负责传话。你只管把配方写好、把窗口挂好，剩下的交给系统。
 
+## 对学习者的启示
 
-## 九、对学习者的启示
+我踩过的弯路是：想把普通 Python 的通信习惯硬套进 ROS2，越套越别扭。后来我给自己定了一套"先问"清单：
 
-- 看到“持续”“流”“广播”，想话题
-- 看到“查询”“触发”“一次性”，想服务
-- 看到“配置”“阈值”“频率”，想参数
+- 看到"持续""流""广播"，想**话题**
+- 看到"查询""触发""一次性"，想**服务**
+- 看到"配置""阈值""频率"，想**参数**
 - 不确定的时候，先问：这个数据是持续流的，还是一问一答的，还是配置？
+- 看到回调，先问：会不会卡住节点？（线程问题上一篇问过了）
+- 改完参数，先问：代码里有没有在运行时重新读这个参数？
 
+ROS2 的通信不是"换一种方式调用函数"，是"换一种思维理解协作"。理解这一点，比记住任何 API 都重要。
 
 ## 结尾
 
@@ -371,16 +434,14 @@ ROS2 里参数必须先 `declare_parameter` 才能 `get_parameter`。不声明�
 
 奶茶店类比能帮你理解这三种通信方式的基本逻辑，但它不能帮你理解 QoS 协商、服务超时处理、参数回调这些细节——比如上面"改了发布频率却不变"的问题，完整解法就是参数回调。那些是另一层东西，需要另外的类比或者直接读文档。
 
-下一篇我会写 TF2——机器人怎么理解“杯子在我的左边”这句话。
-
 如果文中有理解错误的地方，欢迎指出。
 
-**环境信息**：
+环境信息：
 - Ubuntu 22.04
 - ROS2 Humble
 - Python 3.10
-- 完整代码：[GitHub 链接]
 
+完整代码：[wbxxmz/ros2-hello-world](https://github.com/wbxxmz/ros2-hello-world)
 
 ## 附：三种通信方式速查表
 

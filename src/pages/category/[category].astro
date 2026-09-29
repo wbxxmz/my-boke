@@ -4,13 +4,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
-  const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
-  return tags.map((tag) => ({ params: { tag } }));
+  const categories = [...new Set(posts.map((p) => p.data.category).filter(Boolean))];
+  return categories.map((category) => ({ params: { category } }));
 }
 
-const { tag } = Astro.params;
+const { category } = Astro.params;
 const posts = (await getCollection('posts'))
-  .filter((p) => p.data.tags.includes(tag!))
+  .filter((p) => p.data.category === category)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const base = import.meta.env.BASE_URL.endsWith('/')
@@ -18,8 +18,8 @@ const base = import.meta.env.BASE_URL.endsWith('/')
   : import.meta.env.BASE_URL + '/';
 ---
 
-<BaseLayout title={`分类: ${tag}`} description={`分类 "${tag}" 下的所有文章`}>
-  <h1>分类: {tag}</h1>
+<BaseLayout title={`分类: ${category}`} description={`分类 "${category}" 下的所有文章`}>
+  <h1>分类: {category}</h1>
   <p class="tag-count">共 {posts.length} 篇文章</p>
   <ul class="post-list">
     {

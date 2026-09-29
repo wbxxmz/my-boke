@@ -40,6 +40,14 @@ function withBase(path) {
       发布于 {post.data.pubDate.toLocaleDateString('zh-CN')}
     </time>
     <Content />
+
+    {post.data.tags.length > 0 && (
+      <div class="post-tags">
+        {post.data.tags.map((tag) => (
+          <span class="post-tag">#{tag}</span>
+        ))}
+      </div>
+    )}
   </article>
 
   <!-- 阅读量 + 点赞 -->

@@ -405,6 +405,38 @@ a:hover {
     8px;
 }
 
+.post-tags {
+  margin-top:
+    1.5rem;
+  padding-top:
+    1rem;
+  border-top:
+    1px dashed var(--color-border);
+  display:
+    flex;
+  flex-wrap:
+    wrap;
+  gap:
+    0.5rem;
+}
+
+.post-tag {
+  display:
+    inline-block;
+  padding:
+    0.2rem 0.7rem;
+  background:
+    var(--about-tag-bg);
+  border:
+    1px solid var(--about-section-border);
+  border-radius:
+    12px;
+  font-size:
+    0.85rem;
+  color:
+    var(--color-muted);
+}
+
 .site-footer {
   max-width:
     var(--width);

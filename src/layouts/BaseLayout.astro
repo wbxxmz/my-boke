@@ -19,7 +19,7 @@ const base = import.meta.env.BASE_URL.endsWith('/')
 
 // 收集所有文章,供导航栏的分类下拉和搜索使用
 const allPosts = await getCollection('posts');
-const allTags = [...new Set(allPosts.flatMap((p) => p.data.tags))].sort();
+const allCategories = [...new Set(allPosts.map((p) => p.data.category).filter(Boolean))].sort();
 
 // 构建搜索数据 JSON,注入到页面里
 const searchData = allPosts.map((p) => ({
@@ -65,8 +65,8 @@ const searchData = allPosts.map((p) => ({
           <div class="nav-dropdown">
             <button class="nav-dropdown-btn">分类 ▾</button>
             <div class="nav-dropdown-menu">
-              {allTags.map((tag) => (
-                <a href={`${base}tags/${tag}/`}>{tag}</a>
+              {allCategories.map((cat) => (
+                <a href={`${base}category/${cat}/`}>{cat}</a>
               ))}
             </div>
           </div>
