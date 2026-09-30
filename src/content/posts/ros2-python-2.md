@@ -143,6 +143,16 @@ class Listener(Node):
 
 > 为了聚焦通信本身，本文示例都省略了 `main` 函数（`rclpy.init`、`spin` 和资源清理）。完整可运行代码放在 GitHub 仓库里，结构和上一篇的 hello_world 一样。
 
+### 跑起来看看
+
+开两个终端，左边跑发布者，右边跑订阅者——两个独立进程，通过 `chat` 频道完成了对话：
+
+![话题运行效果：左边 talker 每秒发布，右边 listener 实时收到](images/ros2-python-2/topic_run.png)
+
+不用写代码，命令行工具也能"旁听"——`ros2 topic list` 列出当前所有频道，`ros2 topic echo /chat` 直接读广播内容：
+
+![ros2 topic list 列出频道，ros2 topic echo /chat 旁听广播](images/ros2-python-2/topic_list_echo.png)
+
 ### 为什么话题是异步的
 
 你可能会问：发布者为什么不等订阅者？
@@ -238,6 +248,16 @@ class AddClient(Node):
 
 **一句话对比**：普通 Python `data = get_sensor_data()` 一行完成"发请求 + 等结果"；ROS2 拆成"发请求（`call_async`）+ 收结果（`response_callback`）"两步——不是啰嗦，是节点不能因为等一个回复就冻住。
 
+### 跑起来看看
+
+左边服务端，右边客户端。客户端把 `a=3, b=5` 填进点单条递进去，服务端算完把 `sum=8` 写上小票递回来：
+
+![服务运行效果：左边 add_server 算出 3+5=8，右边 add_client 拿到结果 8](images/ros2-python-2/service_run.png)
+
+懒得写客户端时，命令行也能直接点单——`ros2 service call` 把 `a=10, b=20` 递进同一个窗口，拿到 `sum=30`：
+
+![ros2 service call 命令行调用服务，返回 sum=30](images/ros2-python-2/service_call.png)
+
 ### 为什么不能像普通函数那样同步等
 
 你可能会想：我就想同步等，不行吗？
@@ -309,12 +329,30 @@ class ConfigurableNode(Node):
 
 `create_publisher`、`create_timer`、`publish` 和话题那节完全一致，不再重复。
 
+### 跑起来看看
+
+节点按声明时的默认值运行——每 1 秒发布一条 hello：
+
+![参数节点按默认值运行：1 秒一条 hello](images/ros2-python-2/param_default.png)
+
+用命令行看这个节点登记了哪些配方——`ros2 param list` 列出全部参数，`ros2 param get` 读出 `message_content` 当前值是 hello：
+
+![ros2 param list 列出参数，ros2 param get 读出 message_content 为 hello](images/ros2-python-2/param_list_get.png)
+
 运行时修改：
 
 ```bash
 ros2 param set /configurable_node publish_frequency 2.0
 ros2 param set /configurable_node message_content "world"
 ```
+
+两条命令的效果完全不同。改 `message_content` 立竿见影——set 完下一条消息就从 hello 变成了 world（因为代码每次发布前都重读它）：
+
+![set message_content 后，发布内容从 hello 变成 world](images/ros2-python-2/param_set_content.png)
+
+改 `publish_frequency` 就诡异了——CLI 明明返回成功，发布频率却纹丝不动，还是每秒一条：
+
+![set publish_frequency 2.0 返回成功，但发布频率没变](images/ros2-python-2/param_set_freq_no_effect.png)
 
 > **重要：我自己踩过的坑**：`ros2 param set` 只是更新了节点里参数存的值，代码要"用的时候去读"，新值才会生效。上面 `timer_callback` 每次发布前都重新读 `message_content`，所以 set 完下一条消息就变了；而 `publish_frequency` 不行——timer 的频率在 `create_timer` 那一刻就定死了，set 之后没有任何代码去重建 timer，改了也不会变（CLI 还会返回成功，更具迷惑性）。
 >
@@ -402,6 +440,10 @@ ros2 param set /configurable_node message_content "world"
 **错误四：忘了参数要先声明**
 
 ROS2 里参数必须先 `declare_parameter` 才能 `get_parameter`。不声明就取，会报 `Parameter not declared` 错误。我一开始图省事直接 get，结果报错了还以为是参数没设置，后来才发现是连声明都没声明。
+
+翻车现场长这样——把 `declare_parameter` 注释掉直接 `get`，跑起来当场抛 `ParameterNotDeclaredException`：
+
+![不声明参数直接 get，抛 ParameterNotDeclaredException](images/ros2-python-2/param_not_declared_error.png)
 
 ## 回到核心观点
 
