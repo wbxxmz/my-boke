@@ -12,7 +12,10 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+
+// 目录:只取 h2 / h3
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
 // 全站文章按发布时间倒序,用于计算上一篇/下一篇
 const allPosts = (await getCollection('posts')).sort(
@@ -34,83 +37,107 @@ function withBase(path) {
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="article" data-post-id={post.id}>
-    <h1>{post.data.title}</h1>
-    <time datetime={post.data.pubDate.toISOString()}>
-      发布于 {post.data.pubDate.toLocaleDateString('zh-CN')}
-    </time>
-    <Content />
+  <div class="post-layout">
+    <div class="post-main">
+      <article class="article" data-post-id={post.id}>
+        <h1>{post.data.title}</h1>
+        <time datetime={post.data.pubDate.toISOString()}>
+          发布于 {post.data.pubDate.toLocaleDateString('zh-CN')}
+        </time>
+        <Content />
 
-    {post.data.tags.length > 0 && (
-      <div class="post-tags">
-        {post.data.tags.map((tag) => (
-          <span class="post-tag">#{tag}</span>
-        ))}
+        {post.data.tags.length > 0 && (
+          <div class="post-tags">
+            {post.data.tags.map((tag) => (
+              <span class="post-tag">#{tag}</span>
+            ))}
+          </div>
+        )}
+      </article>
+
+      <!-- 阅读量 + 点赞 -->
+      <div class="post-actions">
+        <span class="post-stat">
+          👁 <span id="view-count">0</span> 次阅读
+        </span>
+        <button class="like-btn" id="like-btn" type="button">
+          <span class="like-heart" id="like-heart">♡</span>
+          <span class="like-label" id="like-label">点赞</span>
+          <span class="like-count" id="like-count">0</span>
+        </button>
       </div>
-    )}
-  </article>
 
-  <!-- 阅读量 + 点赞 -->
-  <div class="post-actions">
-    <span class="post-stat">
-      👁 <span id="view-count">0</span> 次阅读
-    </span>
-    <button class="like-btn" id="like-btn" type="button">
-      <span class="like-heart" id="like-heart">♡</span>
-      <span class="like-label" id="like-label">点赞</span>
-      <span class="like-count" id="like-count">0</span>
-    </button>
-  </div>
+      <!-- 上一篇 / 下一篇 -->
+      <nav class="post-nav" aria-label="文章导航">
+        {
+          olderPost ? (
+            <a href={withBase(`posts/${olderPost.id}/`)} class="post-nav-card">
+              <span class="post-nav-label">← 上一篇</span>
+              <span class="post-nav-body">
+                {olderPost.data.cover && (
+                  <img
+                    src={withBase(olderPost.data.cover)}
+                    alt=""
+                    class="post-nav-cover"
+                  />
+                )}
+                <span class="post-nav-text">{olderPost.data.title}</span>
+              </span>
+            </a>
+          ) : (
+            <span class="post-nav-card is-empty" />
+          )
+        }
+        {
+          newerPost ? (
+            <a href={withBase(`posts/${newerPost.id}/`)} class="post-nav-card next">
+              <span class="post-nav-label">下一篇 →</span>
+              <span class="post-nav-body">
+                <span class="post-nav-text">{newerPost.data.title}</span>
+                {newerPost.data.cover && (
+                  <img
+                    src={withBase(newerPost.data.cover)}
+                    alt=""
+                    class="post-nav-cover"
+                  />
+                )}
+              </span>
+            </a>
+          ) : (
+            <span class="post-nav-card is-empty" />
+          )
+        }
+      </nav>
 
-  <!-- 上一篇 / 下一篇 -->
-  <nav class="post-nav" aria-label="文章导航">
-    {
-      olderPost ? (
-        <a href={withBase(`posts/${olderPost.id}/`)} class="post-nav-card">
-          <span class="post-nav-label">← 上一篇</span>
-          <span class="post-nav-body">
-            {olderPost.data.cover && (
-              <img
-                src={withBase(olderPost.data.cover)}
-                alt=""
-                class="post-nav-cover"
-              />
-            )}
-            <span class="post-nav-text">{olderPost.data.title}</span>
-          </span>
-        </a>
-      ) : (
-        <span class="post-nav-card is-empty" />
-      )
-    }
-    {
-      newerPost ? (
-        <a href={withBase(`posts/${newerPost.id}/`)} class="post-nav-card next">
-          <span class="post-nav-label">下一篇 →</span>
-          <span class="post-nav-body">
-            <span class="post-nav-text">{newerPost.data.title}</span>
-            {newerPost.data.cover && (
-              <img
-                src={withBase(newerPost.data.cover)}
-                alt=""
-                class="post-nav-cover"
-              />
-            )}
-          </span>
-        </a>
-      ) : (
-        <span class="post-nav-card is-empty" />
-      )
-    }
-  </nav>
-
-  <!-- 评论区(utterances) -->
-  <section class="comments-section">
-    <h2 class="comments-title">💬 评论</h2>
-    <div class="comments-box" id="comments-box">
-      <p class="comments-loading">评论区加载中…(需要能访问 utteranc.es)</p>
+      <!-- 评论区(utterances) -->
+      <section class="comments-section">
+        <h2 class="comments-title">💬 评论</h2>
+        <div class="comments-box" id="comments-box">
+          <p class="comments-loading">评论区加载中…(需要能访问 utteranc.es)</p>
+        </div>
+      </section>
     </div>
-  </section>
+
+    <!-- 右侧文章目录(有 h2/h3 时才显示) -->
+    {
+      toc.length > 0 && (
+        <aside class="toc-sidebar">
+          <div class="toc-inner">
+            <h3 class="toc-title">目录</h3>
+            <nav class="toc-nav" aria-label="文章目录">
+              <ul>
+                {toc.map((h) => (
+                  <li class={h.depth === 2 ? 'toc-h2' : 'toc-h3'}>
+                    <a href={`#${h.slug}`} data-toc-slug={h.slug}>{h.text}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </aside>
+      )
+    }
+  </div>
 </BaseLayout>
 
 <script
@@ -210,4 +237,38 @@ function withBase(path) {
       });
     }
   })();
+</script>
+
+<script>
+  // ===== 目录滚动监听(scrollspy) =====
+  const tocLinks = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>('[data-toc-slug]'),
+  );
+  if (tocLinks.length > 0) {
+    const headings = tocLinks
+      .map((a) => document.getElementById(a.dataset.tocSlug || ''))
+      .filter((el): el is HTMLElement => !!el);
+
+    function setActive(slug: string | null) {
+      tocLinks.forEach((a) =>
+        a.classList.toggle('active', a.dataset.tocSlug === slug),
+      );
+    }
+
+    // 点击目录:立即高亮(滚动和 observer 高亮可能有延迟)
+    tocLinks.forEach((a) => {
+      a.addEventListener('click', () => setActive(a.dataset.tocSlug || null));
+    });
+
+    // 标题跨过顶部参考线时高亮对应目录项
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: '-90px 0px -70% 0px', threshold: 0 },
+    );
+    headings.forEach((h) => observer.observe(h));
+  }
 </script>
