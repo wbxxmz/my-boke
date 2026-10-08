@@ -49,7 +49,7 @@ ros2-hello-world/
 python3 hello.py
 ```
 
-> ⌨️ 待补：`python3 hello.py` 的真实终端输出（每秒滚动打印一行 hello world）
+![python3 hello.py 输出](../src/content/posts/images/ros2-python-diff/python_hello.png)
 
 ## 构建并运行 ROS2 版
 
@@ -68,11 +68,7 @@ source install/setup.bash
 ros2 run hello_world_pkg hello_world
 ```
 
-> ⌨️ 待补：`ros2 run` 的真实日志输出，形如下面这样（自带时间戳和节点名，正好佐证博客第五步讲的 logger）：
->
-> ```
-> [INFO] [1726999999.999999999] [hello_world]: hello world
-> ```
+![ros2 run 输出](../src/content/posts/images/ros2-python-diff/run_output.png)
 
 ## 确认节点在跑
 
@@ -82,7 +78,7 @@ ros2 run hello_world_pkg hello_world
 ros2 node list
 ```
 
-> 📷 截图待补：输出里能看到 `/hello_world`
+![ros2 node list 输出](../src/content/posts/images/ros2-python-diff/ros2_node_list.png)
 
 ## 博客里踩过的坑，仓库里可以直接复现
 
@@ -94,10 +90,10 @@ ros2 node list
    - 直接 `ros2 run hello_world_pkg hello_world` → 打印的还是旧的
    - `colcon build && source install/setup.bash` 之后再跑 → 才变成新的
 
-> 📷 截图待补：改代码不 build 的「翻车现场」（失败的截图比成功更有说服力）
+![改代码不 build 的翻车现场](../src/content/posts/images/ros2-python-diff/ros2_build.png)
 
 ## 退出时的清理
 
 节点运行中按 `Ctrl+C`，会触发 `KeyboardInterrupt`，`finally` 里的 `destroy_node()` + `shutdown()` 兜底清理（博客第六步）。
 
-> 📷 截图待补：按 Ctrl+C 后终端打印的清理日志
+![Ctrl+C 后的清理](../src/content/posts/images/ros2-python-diff/null_error.png)
