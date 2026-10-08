@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>hello_world_pkg</name>
+  <version>0.0.1</version>
+  <description>博客《同样是Python，为什么ROS2代码看起来完全不一样》配套示例</description>
+  <!-- TODO: 换成你自己的名字和邮箱 -->
+  <maintainer email="1461766338@qq.com">闫家豪</maintainer>
+  <license>Apache-2.0</license>
+
+  <depend>rclpy</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,12 @@
+# colcon 构建产物（博客第七步：改代码必须重新 build 的就是这些）
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# IDE
+.vscode/
+.idea/

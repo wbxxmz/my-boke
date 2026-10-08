@@ -1,7 +1,7 @@
 ---
-title: 同样是Python,为什么ROS2代码看起来完全不一样
+title: 同样是 Python，为什么 ROS2 代码看起来完全不一样
 pubDate: 2026-09-22
-description: 从奶茶店的视角,理解 ROS2 Python 代码和普通 Python 的根本差异:从函数到类、从顺序执行到回调驱动、从 print 到 logger。
+description: 从奶茶店的视角，理解 ROS2 Python 代码和普通 Python 的根本差异：从函数到类、从顺序执行到回调驱动、从 print 到 logger。
 category: ros2学习日志
 tags:
   - ROS2
@@ -272,7 +272,7 @@ ROS2 不是 Python 的扩展，是另一种写程序的方式。理解这一点�
 - ROS2 Humble
 - Python 3.10
 
-完整代码：[wbxxmz/ros2-hello-world](https://github.com/wbxxmz/ros2-hello-world)
+完整代码：[本仓库 ros2-hello-world/ 目录](https://github.com/wbxxmz/my-boke/tree/main/ros2-hello-world)
 ## 附：差异速查表
 
 | 维度 | 普通 Python | ROS2 Python | 奶茶店翻译 |

@@ -4,4 +4,3 @@ dist/
 .env
 .env.*
 npm-debug.log*
-ros2-hello-world/
