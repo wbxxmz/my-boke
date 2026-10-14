@@ -4,6 +4,7 @@ ROS2 学习博客系列的配套代码：
 
 1. [同样是 Python，为什么 ROS2 代码看起来完全不一样](https://wbxxmz.github.io/my-boke/posts/ros2-python-diff/)——从函数到类、从顺序执行到回调驱动
 2. [同样是 Python，ROS2 节点之间怎么说话：话题、服务、参数](https://wbxxmz.github.io/my-boke/posts/ros2-python-2/)——节点间的三种通信方式
+3. [同样是 Python，为什么机器人不能说"杯子在 (1, 2, 3)"？](https://wbxxmz.github.io/my-boke/posts/ros2-tf2/)——坐标系树与变换（TF2）
 
 同一个需求——每隔 1 秒打印 `hello world`——分别用普通 Python 和 ROS2 各写一遍，仓库里的每一行代码都和博客正文一一对应。
 
@@ -21,7 +22,9 @@ ros2-hello-world/
         │   ├── listener.py                 # 第二篇：话题订阅者（收听）
         │   ├── add_server.py               # 第二篇：服务端（点单窗口）
         │   ├── add_client.py               # 第二篇：客户端（拿号排队）
-        │   └── configurable_node.py        # 第二篇：参数（调配方）
+        │   ├── configurable_node.py        # 第二篇：参数（调配方）
+        │   ├── frame_publisher.py          # 第三篇：TF2 广播者（广播变换）
+        │   └── frame_listener.py           # 第三篇：TF2 监听者（查询变换）
         ├── package.xml
         ├── resource/
         │   └── hello_world_pkg

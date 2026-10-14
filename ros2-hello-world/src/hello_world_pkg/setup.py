@@ -29,6 +29,9 @@ setup(
             'add_client = hello_world_pkg.add_client:main',
             # 第二篇博客：参数
             'configurable_node = hello_world_pkg.configurable_node:main',
+            # 第三篇博客：TF2
+            'frame_publisher = hello_world_pkg.frame_publisher:main',
+            'frame_listener = hello_world_pkg.frame_listener:main',
         ],
     },
 )
