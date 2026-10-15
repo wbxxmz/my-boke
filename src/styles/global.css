@@ -393,16 +393,31 @@ a:hover {
 
 /* 文章内图片:不超出卡片,按比例缩放 */
 .article img {
-  display:
-    block;
-  max-width:
-    100%;
-  height:
-    auto;
-  margin:
-    1rem auto;
-  border-radius:
-    8px;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+  border-radius: 8px;
+}
+
+/* 文章内表格:补边框线,表头加底色区分 */
+.article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+}
+
+.article th,
+.article td {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.article th {
+  background: var(--card-bg);
+  font-weight: 600;
 }
 
 .post-tags {
