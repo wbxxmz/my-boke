@@ -10,6 +10,7 @@
     "check:style": "node scripts/check-style.mjs"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
     "astro": "^7.3.2"
   }
 }
