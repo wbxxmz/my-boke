@@ -4,3 +4,5 @@ dist/
 .env
 .env.*
 npm-debug.log*
+# 本地讨论笔记，不入库（CLAUDE.md 需要跨机器同步，故不忽略）
+docx/
