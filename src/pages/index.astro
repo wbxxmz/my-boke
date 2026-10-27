@@ -6,7 +6,7 @@ const allPosts = (await getCollection('posts')).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
-// 传给客户端 JS 用于排序和渲染
+// 传给客户端 JS 用于渲染
 const base = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : import.meta.env.BASE_URL + '/';
@@ -37,10 +37,10 @@ const postsData = allPosts.map((p) => ({
     </div>
   </section>
 
-  <!-- 首页内容:热门文章推荐 -->
+  <!-- 首页内容:最新文章 -->
   <section id="blog-content" class="blog-content home-popular-wrap">
-    <h1 class="page-title" style="margin-top: 1rem;">热门推荐</h1>
-    <p class="home-popular-tip">点击量最高的文章,大家都在看 ✦</p>
+    <h1 class="page-title" style="margin-top: 1rem;">最新文章</h1>
+    <p class="home-popular-tip">按发布时间排列的最新内容</p>
     <div id="popular-list" class="post-list"></div>
     <a href={`${base}posts/`} class="view-all-link">查看全部文章 →</a>
   </section>
@@ -61,29 +61,13 @@ const postsData = allPosts.map((p) => ({
 
 <script define:vars={{ posts: postsData, BASE: base }}>
   (function () {
-    var KEY = 'blog_view_counts';
     var list = document.getElementById('popular-list');
     if (!list) return;
 
-    // 读取点击量
-    var counts = {};
-    try {
-      counts = JSON.parse(localStorage.getItem(KEY) || '{}');
-    } catch (e) {}
+    // 直接取发布时间最新的前 5 篇（frontmatter 已按 pubDate 倒序）
+    var latest = posts.slice(0, 5);
 
-    // 按点击量排序,没点击量的按时间倒序排在后面
-    var sorted = posts.slice().sort(function (a, b) {
-      var ca = counts[a.id] || 0;
-      var cb = counts[b.id] || 0;
-      if (cb !== ca) return cb - ca;
-      return 0; // 保持原数组顺序(已按时间倒序)
-    });
-
-    // 展示前 5 篇
-    var top = sorted.slice(0, 5);
-
-    list.innerHTML = top.map(function (p, i) {
-      var views = counts[p.id] || 0;
+    list.innerHTML = latest.map(function (p, i) {
       var rank = i + 1;
       var coverHtml = '';
       if (p.cover) {
@@ -107,7 +91,6 @@ const postsData = allPosts.map((p) => ({
           '<h2><a href="' + BASE + 'posts/' + p.id + '/">' + p.title + '</a></h2>' +
           '<p class="post-meta">' +
             '<time>' + p.pubDate + '</time>' +
-            (views > 0 ? '<span class="popular-views">👁 ' + views + ' 次阅读</span>' : '') +
           '</p>' +
           '<p class="post-excerpt">' + p.description + '</p>' +
           tagsHtml +
