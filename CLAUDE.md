@@ -96,6 +96,10 @@
 - 已知待办：RSS 死链（`BaseLayout.astro:109` 有链接、无生成器）、localStorage 假阅读量/点赞（`[id].astro:148-203`）、无 sitemap / og 卡片、无系列页
 - 本地笔记：`docx/改进清单.md`（已 gitignore），讨论结论都记在那里；重大结论变化时同步更新它
 
+### 提交纪律
+
+- **禁止 `git checkout -- .` / `git restore .`**：工作区状态不明时用 `git status` 查看；确需丢弃时先 `git stash` 或逐文件确认，不要用会无提示丢失修改的命令。
+
 ## 8. 禁止事项
 
 - 不为了让人舒服而降低判断强度；也不为了显得犀利而虚构问题。
