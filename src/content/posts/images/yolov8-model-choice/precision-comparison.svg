@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 260" width="420" height="260">
+  <rect width="420" height="260" fill="#fafafa" rx="8"/>
+  <text x="210" y="26" text-anchor="middle" font-size="14" font-weight="600" fill="#444">精度各档对比</text>
+
+  <!-- 参考线 0.4 和 0.8 -->
+  <g stroke="#eee" stroke-width="1" stroke-dasharray="3,2">
+    <line x1="40" y1="40" x2="380" y2="40"/>
+    <line x1="40" y1="140" x2="380" y2="140"/>
+  </g>
+  <text x="28" y="43" font-size="9" fill="#bbb">1.0</text>
+  <text x="28" y="143" font-size="9" fill="#bbb">0.5</text>
+  <text x="28" y="243" font-size="9" fill="#bbb">0</text>
+
+  <!-- n 档 -->
+  <g transform="translate(60,0)">
+    <text x="60" y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#333">YOLOv8n</text>
+    <text x="60" y="68" text-anchor="middle" font-size="10" fill="#999">20轮 · 416 · CPU</text>
+
+    <!-- 四组柱子 -->
+    <g transform="translate(15,80)">
+      <!-- mAP50 0.7109: from 240, height 0.7109*200=142 -->
+      <rect x="0"  y="98" width="20" height="142" fill="#3498db"/>
+      <text x="10" y="93"  text-anchor="middle" font-size="9" fill="#555">0.71</text>
+      <!-- mAP50-95 0.4003: height 80 -->
+      <rect x="28" y="160" width="20" height="80"  fill="#e67e22"/>
+      <text x="38" y="155" text-anchor="middle" font-size="9" fill="#555">0.40</text>
+      <!-- Recall 0.5955: height 119 -->
+      <rect x="56" y="121" width="20" height="119" fill="#27ae60"/>
+      <text x="66" y="116" text-anchor="middle" font-size="9" fill="#555">0.60</text>
+      <!-- Precision 0.7588: height 152 -->
+      <rect x="84" y="88"  width="20" height="152" fill="#9b59b6"/>
+      <text x="94" y="83"  text-anchor="middle" font-size="9" fill="#555">0.76</text>
+    </g>
+  </g>
+
+  <!-- s 档 -->
+  <g transform="translate(155,0)">
+    <text x="60" y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#333">YOLOv8s</text>
+    <text x="60" y="68" text-anchor="middle" font-size="10" fill="#999">50轮 · 416 · GPU</text>
+
+    <g transform="translate(15,80)">
+      <!-- mAP50 0.7579: height 152 -->
+      <rect x="0"  y="88"  width="20" height="152" fill="#3498db"/>
+      <text x="10" y="83"  text-anchor="middle" font-size="9" fill="#555">0.76</text>
+      <!-- mAP50-95 0.4354: height 87 -->
+      <rect x="28" y="153" width="20" height="87"  fill="#e67e22"/>
+      <text x="38" y="148" text-anchor="middle" font-size="9" fill="#555">0.44</text>
+      <!-- Recall 0.6713: height 134 -->
+      <rect x="56" y="106" width="20" height="134" fill="#27ae60"/>
+      <text x="66" y="101" text-anchor="middle" font-size="9" fill="#555">0.67</text>
+      <!-- Precision 0.7825: height 157 -->
+      <rect x="84" y="83"  width="20" height="157" fill="#9b59b6"/>
+      <text x="94" y="78"  text-anchor="middle" font-size="9" fill="#555">0.78</text>
+    </g>
+  </g>
+
+  <!-- m 档 -->
+  <g transform="translate(250,0)">
+    <text x="60" y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#2c3e50">YOLOv8m（默认）</text>
+    <text x="60" y="68" text-anchor="middle" font-size="10" fill="#999">100轮 · 640 · GPU</text>
+
+    <g transform="translate(15,80)">
+      <!-- mAP50 0.7693: height 154 -->
+      <rect x="0"  y="86"  width="20" height="154" fill="#3498db"/>
+      <text x="10" y="81"  text-anchor="middle" font-size="9" fill="#555">0.77</text>
+      <!-- mAP50-95 0.4411: height 88 -->
+      <rect x="28" y="152" width="20" height="88"  fill="#e67e22"/>
+      <text x="38" y="147" text-anchor="middle" font-size="9" fill="#555">0.44</text>
+      <!-- Recall 0.6989: height 140 -->
+      <rect x="56" y="100" width="20" height="140" fill="#27ae60"/>
+      <text x="66" y="95"  text-anchor="middle" font-size="9" fill="#555">0.70</text>
+      <!-- Precision 0.7270: height 145 -->
+      <rect x="84" y="95"  width="20" height="145" fill="#9b59b6"/>
+      <text x="94" y="90"  text-anchor="middle" font-size="9" fill="#555">0.73</text>
+    </g>
+
+    <!-- 箭头标 Precision 下降 -->
+    <g stroke="#c0392b" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+    <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#c0392b"/></marker></defs>
+    <path d="M125 160 Q130 180 140 195"/>
+    <text x="150" y="200" font-size="9" fill="#c0392b" font-weight="600">Precision 降了</text>
+  </g>
+
+  <!-- 图例 -->
+  <g transform="translate(40,242)">
+    <rect x="0"   y="0" width="10" height="10" fill="#3498db"/><text x="14"  y="9" font-size="10" fill="#555">mAP50</text>
+    <rect x="60"  y="0" width="10" height="10" fill="#e67e22"/><text x="74"  y="9" font-size="10" fill="#555">mAP50-95</text>
+    <rect x="140" y="0" width="10" height="10" fill="#27ae60"/><text x="154" y="9" font-size="10" fill="#555">Recall</text>
+    <rect x="210" y="0" width="10" height="10" fill="#9b59b6"/><text x="224" y="9" font-size="10" fill="#555">Precision</text>
+  </g>
+</svg>
